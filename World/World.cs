@@ -1,19 +1,17 @@
-using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework.Graphics;
 
 public class World : IDebugRowProvider
 {
-    private Effect effect;
-
     private Dictionary<Vector3Int, Chunk> chunks = new();
-    private ConcurrentBag<Chunk> chunksRenderable = new();
+    private List<ChunkMesh> chunkMeshes = new();
+    private static object _chunkMeshesLock = new object();
 
     public void Update(Player player)
     {
-        for (int x = -3; x <= 3; x++)
+        var renderDistance = Settings.RenderDistanceChunks;
+        for (int x = -renderDistance; x <= renderDistance; x++)
         {
-            for (int z = -3; z <= 3; z++)
+            for (int z = -renderDistance; z <= renderDistance; z++)
             {
                 var coordinate = player.ChunkCoordinate + new Vector3Int(x, 0, z);
 
@@ -27,23 +25,26 @@ public class World : IDebugRowProvider
                 Task.Run(() =>
                 {
                     chunk.Generate();
-                    chunksRenderable.Add(chunk);
+                    lock (_chunkMeshesLock)
+                    {
+                        chunkMeshes.Add(chunk.Mesh);
+                    }
                 });
             }
         }
     }
 
-    public void SetEffect(Effect effect)
-        => this.effect = effect;
-
     public IEnumerable<ChunkMesh> GetChunkMeshes()
     {
-        foreach (var chunk in chunksRenderable)
+        lock (_chunkMeshesLock)
         {
-            if (chunk.Mesh.IsEmpty)
-                continue;
+            foreach (var mesh in chunkMeshes)
+            {
+                if (mesh.IsEmpty)
+                    continue;
 
-            yield return chunk.Mesh;
+                yield return mesh;
+            }
         }
     }
 
