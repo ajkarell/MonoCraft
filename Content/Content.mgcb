@@ -13,6 +13,13 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin DebugFont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:DebugFont.spritefont
+
 #begin dirt.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -24,4 +31,10 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:dirt.png
+
+#begin MonoMaa.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:MonoMaa.fx;World.fx
 
