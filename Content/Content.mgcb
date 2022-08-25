@@ -20,11 +20,11 @@
 /processorParam:TextureFormat=Compressed
 /build:DebugFont.spritefont
 
-#begin MonoMaa.fx
+#begin Main.fx
 /importer:EffectImporter
 /processor:EffectProcessor
 /processorParam:DebugMode=Auto
-/build:MonoMaa.fx;World.fx
+/build:Main.fx;Main.fx
 
 #begin Textures/dirt.png
 /importer:TextureImporter

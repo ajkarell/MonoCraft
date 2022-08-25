@@ -66,7 +66,7 @@ public class MainGame : Game
         spriteBatch = new SpriteBatch(GraphicsDevice);
         font = Content.Load<SpriteFont>("DebugFont");
 
-        effect = Content.Load<Effect>("World");
+        effect = Content.Load<Effect>("Main");
         effect.Parameters["Projection"].SetValue(ProjectionMatrix);
 
         var textureCount = Block.RegisterBlockTextures();

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32319.34
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoMaa", "MonoMaa.csproj", "{97DE09A3-DAA4-47B9-A993-284B91C51E5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoCraft", "MonoCraft.csproj", "{97DE09A3-DAA4-47B9-A993-284B91C51E5E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

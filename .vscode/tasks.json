@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/MonoMaa.csproj",
+                "${workspaceFolder}/MonoCraft.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/MonoMaa.csproj",
+                "${workspaceFolder}/MonoCraft.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/MonoMaa.csproj"
+                "${workspaceFolder}/MonoCraft.csproj"
             ],
             "problemMatcher": "$msCompile"
         }
