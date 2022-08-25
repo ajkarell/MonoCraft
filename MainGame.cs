@@ -19,6 +19,7 @@ public class MainGame : Game
     private Effect effect;
 
     private Matrix projectionMatrix;
+    private static Vector2 screenCenter;
 
     private List<IDebugRowProvider> debugRowProviders = new();
 
@@ -37,6 +38,12 @@ public class MainGame : Game
 
         Components.Add(player);
         Components.Add(world);
+
+        Window.AllowUserResizing = true;
+        Window.ClientSizeChanged += (_, _) => {
+            projectionMatrix = GetProjectionMatrix();
+            screenCenter = GetScreenCenter();
+        };
     }
 
     protected override void Initialize()
@@ -46,9 +53,8 @@ public class MainGame : Game
             debugRowProviders.Add(debugRowProvider);
         }
 
-        float fov = 60.0f * (MathF.PI / 180.0f);
-        float aspectRatio = (float)graphics.PreferredBackBufferWidth / graphics.PreferredBackBufferHeight;
-        projectionMatrix = Matrix.CreatePerspectiveFieldOfView(fov, aspectRatio, 0.01f, 100_000f);
+        projectionMatrix = GetProjectionMatrix();
+        screenCenter = GetScreenCenter();
 
         base.Initialize();
     }
@@ -111,6 +117,16 @@ public class MainGame : Game
         DrawDebugUi(gameTime);
         spriteBatch.End();
     }
+
+    public void CenterMouse()
+    {
+        Mouse.SetPosition((int)screenCenter.X, (int)screenCenter.Y);
+    }
+
+    Matrix GetProjectionMatrix()
+        => Matrix.CreatePerspectiveFieldOfView(60.0f * (MathF.PI / 180.0f), (float)graphics.PreferredBackBufferWidth / graphics.PreferredBackBufferHeight, 0.01f, 100_000f);
+    Vector2 GetScreenCenter()
+        => new Vector2(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
 
     private void DrawDebugUi(GameTime gameTime)
     {
