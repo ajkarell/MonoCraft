@@ -20,14 +20,17 @@ public class MainGame : Game
 
     private Matrix projectionMatrix;
     private static Vector2 screenCenter;
+    private TextureArray textureArray;
 
     private List<IDebugRowProvider> debugRowProviders = new();
 
     public MainGame()
     {
         graphics = new GraphicsDeviceManager(this);
-        graphics.SynchronizeWithVerticalRetrace = true;
-        IsFixedTimeStep = true;
+        graphics.SynchronizeWithVerticalRetrace = false;
+        graphics.GraphicsProfile = GraphicsProfile.HiDef; //for shaders to work
+
+        IsFixedTimeStep = false;
         // TargetElapsedTime = TimeSpan.FromSeconds(1.0f / 144.0f);
 
         Content.RootDirectory = "Content";
@@ -68,6 +71,11 @@ public class MainGame : Game
         effect = Content.Load<Effect>("World");
         effect.Parameters["Projection"].SetValue(projectionMatrix);
 
+        var textureCount = Block.RegisterBlockTextures();
+        textureArray = new TextureArray(GraphicsDevice, 16, 16, textureCount);
+        effect.Parameters["TextureArray"].SetValue(textureArray);
+
+        textureArray.LoadTexturesFromContent(Content);
         var texture = Content.Load<Texture2D>("dirt");
         effect.Parameters["Texture"].SetValue(texture);
     }

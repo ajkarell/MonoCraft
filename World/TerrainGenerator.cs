@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 public static class TerrainGenerator
 {
     static FastNoiseLite FastNoiseLite = new(seed: 280204);
-    static float NoiseScale => 0.1f;
+    static float NoiseScale => 0.5f;
 
     public static BlockType[] GenerateChunkBlocks(Vector3Int coordinate)
     {

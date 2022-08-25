@@ -3,8 +3,8 @@
 	#define VS_SHADERMODEL vs_3_0
 	#define PS_SHADERMODEL ps_3_0
 #else
-	#define VS_SHADERMODEL vs_4_0_level_9_1
-	#define PS_SHADERMODEL ps_4_0_level_9_1
+	#define VS_SHADERMODEL vs_5_0
+	#define PS_SHADERMODEL ps_5_0
 #endif
 
 float4x4 World;
@@ -12,8 +12,8 @@ float4x4 WorldInverseTranspose;
 float4x4 View;
 float4x4 Projection;
 
-Texture2D Texture;
-sampler2D textureSampler = sampler_state
+Texture2DArray Textures;
+sampler textureSampler = sampler_state
 {
 	Texture = <Texture>;
     MinFilter = Point;
@@ -33,7 +33,7 @@ struct VertexShaderOutput
 {
 	float4 Position : SV_POSITION;
 	float3 Normal : NORMAL0;
-	float2 TexCoord : TEXCOORD0;
+	float3 TexCoord : TEXCOORD0;
 };
 
 VertexShaderOutput MainVS(in VertexShaderInput input)
@@ -47,14 +47,15 @@ VertexShaderOutput MainVS(in VertexShaderInput input)
     float4 normal = normalize(mul(input.Normal, World));
     output.Normal = normal;
 
-	output.TexCoord = input.TexCoord.xy; // TODO
+	output.TexCoord = input.TexCoord; // TODO
 
 	return output;
 }
 
 float4 MainPS(VertexShaderOutput input) : COLOR
 {
-	float4 textureColor = tex2D(textureSampler, input.TexCoord);
+	float4 textureColor = Textures.Sample(textureSampler, input.TexCoord);
+
     return textureColor;
 }
 

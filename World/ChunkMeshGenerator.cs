@@ -47,15 +47,15 @@ public class ChunkMesh
         InverseTransposeWorldMatrix = Matrix.Transpose(Matrix.Invert(WorldMatrix));
     }
 
-    public void AddFace(Vector3 blockPosition, int normalIndex, BlockType block)
+    public void AddFace(Vector3 blockPosition, BlockType blockType, BlockSide blockSide)
     {
-        int textureIndex = 0;
+        int textureIndex = Block.GetTextureIndex(blockType, blockSide);
 
-        var positions = ChunkMeshGenerator.blockPositionsByNormal[normalIndex];
+        var positions = ChunkMeshGenerator.blockPositionsBySide[(int)blockSide];
         var normals = ChunkMeshGenerator.blockNormals;
         var uvs = ChunkMeshGenerator.blockFaceUvs.Select((uv) => new Vector3(uv.X, uv.Y, textureIndex)).ToArray();
 
-        var faceVertices = positions.Select((p, i) => new BlockVertex(blockPosition + p, normals[normalIndex], uvs[i]));
+        var faceVertices = positions.Select((p, i) => new BlockVertex(blockPosition + p, normals[(int)blockSide], uvs[i]));
         verticesList.AddRange(faceVertices);
 
         var indices = ChunkMeshGenerator.blockFaceIndices.Select((i) => triangleIndex + i);
@@ -100,7 +100,7 @@ public static class ChunkMeshGenerator
         FORWARD,    // CUBE_FRONT   5
     };
 
-    public static readonly Vector3[][] blockPositionsByNormal = {
+    public static readonly Vector3[][] blockPositionsBySide = {
         new[] {   UP,                     ZERO,               FORWARD,            UP+FORWARD          },  // CUBE_LEFT    0
         new[] {   RIGHT + UP + FORWARD,   RIGHT + FORWARD,    RIGHT,              RIGHT + UP          },  // CUBE_RIGHT   1
         new[] {   RIGHT,                  RIGHT + FORWARD,    FORWARD,            ZERO                },  // CUBE_BOTTOM  2
@@ -138,15 +138,15 @@ public static class ChunkMeshGenerator
                         continue;
 
                     var position = new Vector3(x, y, z);
-                    for (int n = 0; n < 6; n++)
+                    for (BlockSide side = 0; (int)side < 6; side++)
                     {
-                        var neighborPosition = (position + blockNormals[n]).FloorToInt();
+                        var neighborPosition = (position + blockNormals[(int)side]).FloorToInt();
 
                         if (neighborPosition.X >= Chunk.SIZE || neighborPosition.X < 0
                         || neighborPosition.Y >= Chunk.SIZE || neighborPosition.Y < 0
                         || neighborPosition.Z >= Chunk.SIZE || neighborPosition.Z < 0)
                         {
-                            continue;
+                            // continue;
                         }
                         else
                         {
@@ -156,7 +156,7 @@ public static class ChunkMeshGenerator
                                 continue;
                         }
 
-                        chunkMesh.AddFace(new Vector3(x, y, z), n, blockType);
+                        chunkMesh.AddFace(new Vector3(x, y, z), blockType, side);
                     }
                 }
             }
