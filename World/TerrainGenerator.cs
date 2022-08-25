@@ -7,7 +7,9 @@ public static class TerrainGenerator
 
     public static BlockType[] GenerateChunkBlocks(Vector3Int coordinate)
     {
+        var densities = new float[Chunk.SIZE_CUBED];
         var blocks = new BlockType[Chunk.SIZE_CUBED];
+
         for (int y = 0; y < Chunk.SIZE; y++)
         {
             for (int x = 0; x < Chunk.SIZE; x++)
@@ -21,7 +23,28 @@ public static class TerrainGenerator
 
                     density -= worldPosition.Y;
 
-                    blocks[Chunk.Index(x, y, z)] = density < 0 ? BlockType.Air : BlockType.Dirt;
+                    densities[Chunk.Index(x, y, z)] = density;
+                }
+            }
+        }
+
+        for (int y = 0; y < Chunk.SIZE; y++)
+        {
+            for (int x = 0; x < Chunk.SIZE; x++)
+            {
+                for (int z = 0; z < Chunk.SIZE; z++)
+                {
+                    int index = Chunk.Index(x, y, z);
+                    BlockType block = BlockType.Air;
+
+                    if (densities[index] > 0)
+                    {
+                        var densityAbove = y + 1 < Chunk.SIZE ? densities[Chunk.Index(x, y + 1, z)] : float.MaxValue;
+
+                        block = densityAbove > 0 ? BlockType.Dirt : BlockType.Grass;
+                    }
+
+                    blocks[index] = block;
                 }
             }
         }

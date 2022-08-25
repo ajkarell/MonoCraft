@@ -1,8 +1,7 @@
 public static class Block
 {
     private static int CurrentTextureIndex = 0;
-    private static Dictionary<string, int> TextureIndices
-        = new Dictionary<string, int>();
+    private static Dictionary<string, int> TextureIndices = new();
 
     /// <summary>
     /// Tries to get texture index. If it doesn't exist, generate one.
@@ -23,8 +22,7 @@ public static class Block
         }
     }
 
-    private static Dictionary<(BlockType, BlockSide), int> BlockSivuTextureIndices
-        = new Dictionary<(BlockType, BlockSide), int>();
+    private static Dictionary<(BlockType, BlockSide), int> BlockSivuTextureIndices = new();
 
     /// <summary>
     /// Register texture for every side

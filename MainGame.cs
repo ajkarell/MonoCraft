@@ -37,10 +37,8 @@ public class MainGame : Game
         IsMouseVisible = false;
 
         player = new Player(this);
-        world = new World(player);
 
         Components.Add(player);
-        debugRowProviders.Add(world);
 
         Window.AllowUserResizing = true;
         Window.ClientSizeChanged += (_, _) =>
@@ -73,11 +71,11 @@ public class MainGame : Game
 
         var textureCount = Block.RegisterBlockTextures();
         textureArray = new TextureArray(GraphicsDevice, 16, 16, textureCount);
+        textureArray.LoadTexturesFromContent(Content);
         effect.Parameters["TextureArray"].SetValue(textureArray);
 
-        textureArray.LoadTexturesFromContent(Content);
-        var texture = Content.Load<Texture2D>("dirt");
-        effect.Parameters["Texture"].SetValue(texture);
+        world = new World(player);
+        debugRowProviders.Add(world);
     }
 
     protected override void Update(GameTime gameTime)
@@ -95,6 +93,7 @@ public class MainGame : Game
         GraphicsDevice.DepthStencilState = DepthStencilState.Default;
         GraphicsDevice.BlendState = BlendState.Opaque;
         GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+        GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
 
         effect.Parameters["View"].SetValue(player.ViewMatrix);
 

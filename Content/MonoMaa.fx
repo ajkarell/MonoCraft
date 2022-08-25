@@ -6,7 +6,7 @@ float4x4 WorldInverseTranspose;
 float4x4 View;
 float4x4 Projection;
 
-Texture2DArray Textures;
+Texture2DArray TextureArray;
 sampler textureSampler = sampler_state
 {
 	Texture = <Texture>;
@@ -48,7 +48,7 @@ VertexShaderOutput MainVS(in VertexShaderInput input)
 
 float4 MainPS(VertexShaderOutput input) : COLOR
 {
-	float4 textureColor = Textures.Sample(textureSampler, input.TexCoord);
+	float4 textureColor = TextureArray.Sample(textureSampler, input.TexCoord);
 
     return textureColor;
 }
