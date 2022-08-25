@@ -33,14 +33,15 @@ public class MainGame : Game
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
 
-        world = new World(this);
+        world = new World();
         player = new Player(this);
 
         Components.Add(player);
-        Components.Add(world);
+        debugRowProviders.Add(world);
 
         Window.AllowUserResizing = true;
-        Window.ClientSizeChanged += (_, _) => {
+        Window.ClientSizeChanged += (_, _) =>
+        {
             projectionMatrix = GetProjectionMatrix();
             screenCenter = GetScreenCenter();
         };
@@ -75,6 +76,8 @@ public class MainGame : Game
     {
         if (Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
+
+        world.Update(player);
 
         base.Update(gameTime);
     }

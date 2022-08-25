@@ -1,22 +1,25 @@
-using System.Linq;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-public class World : GameComponent, IDebugRowProvider
+public class World : IDebugRowProvider
 {
     private Effect effect;
 
     private Dictionary<Vector3Int, Chunk> chunks = new();
-    private List<Chunk> chunksRenderable = new();
+    private ConcurrentBag<Chunk> chunksRenderable = new();
 
-    public World(Game game) : base(game)
+    public void Update(Player player)
     {
-        for (int x = -1; x <= 1; x++)
+        for (int x = -3; x <= 3; x++)
         {
-            for (int z = -1; z <= 1; z++)
+            for (int z = -3; z <= 3; z++)
             {
-                var coordinate = new Vector3Int(x, 0, z);
+                var coordinate = player.ChunkCoordinate + new Vector3Int(x, 0, z);
+
+                if (chunks.ContainsKey(coordinate))
+                    continue;
+
                 var chunk = new Chunk(coordinate);
 
                 chunks.Add(coordinate, chunk);
@@ -30,21 +33,19 @@ public class World : GameComponent, IDebugRowProvider
         }
     }
 
-    public override void Initialize()
-    {
-        base.Initialize();
-    }
-
     public void SetEffect(Effect effect)
         => this.effect = effect;
 
-    public override void Update(GameTime gameTime)
-    {
-        base.Update(gameTime);
-    }
-
     public IEnumerable<ChunkMesh> GetChunkMeshes()
-        => chunksRenderable.Select(x => x.Mesh);
+    {
+        foreach (var chunk in chunksRenderable)
+        {
+            if (chunk.Mesh.IsEmpty)
+                continue;
+
+            yield return chunk.Mesh;
+        }
+    }
 
     public IEnumerable<string> GetDebugRows()
     {

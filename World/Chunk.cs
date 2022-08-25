@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 
 public class Chunk
@@ -20,10 +21,15 @@ public class Chunk
 
     public void Generate()
     {
-        Blocks = WorldGenerator.GenerateChunkBlocks(Coordinate);
+        Blocks = TerrainGenerator.GenerateChunkBlocks(Coordinate);
         Mesh = ChunkMeshGenerator.GenerateChunkMesh(this);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Index(int x, int y, int z)
         => y * SIZE_SQUARED + z * SIZE + x;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int Index(Vector3Int position)
+        => position.Y * SIZE_SQUARED + position.Z * SIZE + position.X;
 }

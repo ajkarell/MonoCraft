@@ -19,6 +19,7 @@ public class Player : GameComponent, IDebugRowProvider
     MouseState previousMouseState;
 
     float MovementSpeed => 16.0f;
+    float FastMovementSpeed => MovementSpeed * 3.0f;
     float LookSensitivity => 3.0f;
 
     readonly MainGame game;
@@ -44,38 +45,42 @@ public class Player : GameComponent, IDebugRowProvider
         if (Velocity != Vector3.Zero)
         {
             Position += Velocity * gameTime.GetDeltaTimeSeconds();
-             ChunkCoordinate = Position.AsChunkCoordinate();
+            ChunkCoordinate = Position.AsChunkCoordinate();
         }
 
         ViewMatrix = GetViewMatrix();
         ViewMatrixInverted = Matrix.Invert(ViewMatrix);
     }
 
-    void HandleInput() {
-        if(!game.IsActive)
+    void HandleInput()
+    {
+        if (!game.IsActive)
             return;
+
+        var keyState = Keyboard.GetState();
 
         int signX = 0, signY = 0, signZ = 0;
 
-        if (Keyboard.GetState().IsKeyDown(Keys.W))
+        if (keyState.IsKeyDown(Keys.W))
             signZ += 1;
-        if (Keyboard.GetState().IsKeyDown(Keys.S))
+        if (keyState.IsKeyDown(Keys.S))
             signZ -= 1;
 
-        if (Keyboard.GetState().IsKeyDown(Keys.D))
+        if (keyState.IsKeyDown(Keys.D))
             signX += 1;
-        if (Keyboard.GetState().IsKeyDown(Keys.A))
+        if (keyState.IsKeyDown(Keys.A))
             signX -= 1;
-            
-        if (Keyboard.GetState().IsKeyDown(Keys.Space))
+
+        if (keyState.IsKeyDown(Keys.Space))
             signY += 1;
-        if (Keyboard.GetState().IsKeyDown(Keys.LeftControl))
+        if (keyState.IsKeyDown(Keys.LeftControl))
             signY -= 1;
 
         if (signX != 0 || signY != 0 || signZ != 0)
         {
             var movementDirection = Vector3.Normalize(Right * signX + Vector3.Up * signY + Forward * signZ);
-            Velocity = movementDirection * MovementSpeed;
+            var movementSpeed = keyState.IsKeyDown(Keys.LeftShift) ? FastMovementSpeed : MovementSpeed;
+            Velocity = movementDirection * movementSpeed;
         }
 
         var mouseState = Mouse.GetState();
@@ -88,7 +93,7 @@ public class Player : GameComponent, IDebugRowProvider
 
         eulerAngles.X = MonoMath.Clamp(eulerAngles.X, -89.9f, 89.9f);
         eulerAngles.Y = MonoMath.Repeat(eulerAngles.Y, 0f, 360f);
-            
+
         game.CenterMouse();
 
         previousMouseState = Mouse.GetState();
@@ -105,8 +110,8 @@ public class Player : GameComponent, IDebugRowProvider
         float sinYaw = MathF.Sin(yawRadians);
 
         Vector3 xAxis = new Vector3(cosYaw, 0, -sinYaw);
-        Vector3 yAxis = new Vector3(sinYaw*sinPitch, cosPitch, cosYaw*sinPitch);
-        Vector3 zAxis = new Vector3(sinYaw*cosPitch, -sinPitch, cosPitch*cosYaw);
+        Vector3 yAxis = new Vector3(sinYaw * sinPitch, cosPitch, cosYaw * sinPitch);
+        Vector3 zAxis = new Vector3(sinYaw * cosPitch, -sinPitch, cosPitch * cosYaw);
         float dotX = Vector3.Dot(xAxis, Position);
         float dotY = Vector3.Dot(yAxis, Position);
         float dotZ = Vector3.Dot(zAxis, Position);

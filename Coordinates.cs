@@ -12,6 +12,9 @@ public struct Vector3Int
         this.Z = z;
     }
 
+    public static Vector3Int operator +(Vector3Int lhs, Vector3Int rhs)
+        => new Vector3Int(rhs.X + lhs.X, rhs.Y + lhs.Y, rhs.Z + lhs.Z);
+
     public static Vector3 operator *(Vector3Int lhs, float rhs)
         => lhs.AsVector3() * rhs;
 

@@ -37,6 +37,7 @@ public class ChunkMesh
 
     public int VertexCount { get; private set; }
     public int TriangleCount { get; private set; }
+    public bool IsEmpty { get; private set; }
 
     private int triangleIndex = 0;
 
@@ -70,6 +71,8 @@ public class ChunkMesh
 
         VertexCount = Vertices.Length;
         TriangleCount = Indices.Length / 3;
+
+        IsEmpty = (VertexCount == 0);
 
         verticesList.Clear();
         verticesList = null;
@@ -131,12 +134,28 @@ public static class ChunkMeshGenerator
                 for (int z = 0; z < Chunk.SIZE; z++)
                 {
                     var blockType = chunk.Blocks[Chunk.Index(x, y, z)];
-
                     if (!blockType.IsOpaque())
                         continue;
 
+                    var position = new Vector3(x, y, z);
                     for (int n = 0; n < 6; n++)
                     {
+                        var neighborPosition = (position + blockNormals[n]).FloorToInt();
+
+                        if (neighborPosition.X >= Chunk.SIZE || neighborPosition.X < 0
+                        || neighborPosition.Y >= Chunk.SIZE || neighborPosition.Y < 0
+                        || neighborPosition.Z >= Chunk.SIZE || neighborPosition.Z < 0)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            var neighborBlockType = chunk.Blocks[Chunk.Index(neighborPosition)];
+
+                            if (neighborBlockType.IsOpaque())
+                                continue;
+                        }
+
                         chunkMesh.AddFace(new Vector3(x, y, z), n, blockType);
                     }
                 }
