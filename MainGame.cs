@@ -26,12 +26,12 @@ public class MainGame : Game
     public MainGame()
     {
         graphics = new GraphicsDeviceManager(this);
-        graphics.SynchronizeWithVerticalRetrace = false;
+        graphics.SynchronizeWithVerticalRetrace = true;
         IsFixedTimeStep = true;
-        TargetElapsedTime = TimeSpan.FromSeconds(1.0f / 144.0f);
+        // TargetElapsedTime = TimeSpan.FromSeconds(1.0f / 144.0f);
 
         Content.RootDirectory = "Content";
-        IsMouseVisible = true;
+        IsMouseVisible = false;
 
         world = new World();
         player = new Player(this);
