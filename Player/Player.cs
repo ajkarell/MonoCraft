@@ -7,25 +7,26 @@ public class Player : GameComponent, IDebugRowProvider
 {
     public Vector3 Position { get; private set; }
     public Vector3Int ChunkCoordinate { get; private set; }
-    private Vector3Int previousChunkCoordinate;
+    private Vector3Int previousWorldGenChunkCoordinate;
 
     public Vector3 Velocity { get; private set; }
 
     public Vector3 Forward => ViewMatrixInverted.Forward;
     public Vector3 Right => ViewMatrixInverted.Right;
 
-    public Matrix ViewMatrix { get; set; }
-    public Matrix ViewMatrixInverted { get; set; }
+    public Matrix ViewMatrix { get; private set; }
+    public Matrix ViewMatrixInverted { get; private set; }
+    public BoundingFrustum ViewFrustum { get; private set; }
 
-    public delegate void OnChunkCoordinateChangedHandler();
-    public event OnChunkCoordinateChangedHandler OnChunkCoordinateChanged;
+    public delegate void OnWorldGenThresholdCrossedHandler();
+    public event OnWorldGenThresholdCrossedHandler OnWorldGenThresholdCrossed;
 
     private Vector3 eulerAngles;
     private MouseState previousMouseState;
 
     private float MovementSpeed => 16.0f;
     private float FastMovementSpeed => MovementSpeed * 3.0f;
-    private float LookSensitivity => 3.0f;
+    private float LookSensitivity => 1.0f;
 
     private readonly MainGame game;
 
@@ -34,14 +35,13 @@ public class Player : GameComponent, IDebugRowProvider
         this.game = game;
         Position = Vector3.Zero;
         ChunkCoordinate = Position.AsChunkCoordinate();
-        previousChunkCoordinate = ChunkCoordinate;
+        previousWorldGenChunkCoordinate = ChunkCoordinate;
         Velocity = Vector3.Zero;
         eulerAngles = Vector3.Zero;
-    }
 
-    public override void Initialize()
-    {
-        base.Initialize();
+        ViewMatrix = GetViewMatrix();
+        ViewMatrixInverted = Matrix.Invert(ViewMatrix);
+        ViewFrustum = GetBoundingFrustum();
     }
 
     public override void Update(GameTime gameTime)
@@ -53,14 +53,27 @@ public class Player : GameComponent, IDebugRowProvider
         {
             Position += Velocity * gameTime.GetDeltaTimeSeconds();
             ChunkCoordinate = Position.AsChunkCoordinate();
-            if (!previousChunkCoordinate.Equals(ChunkCoordinate))
+
+            if (MonoMath.Abs(ChunkCoordinate.X - previousWorldGenChunkCoordinate.X) >= Settings.RenderThresholdHorizontal
+                || MonoMath.Abs(ChunkCoordinate.Y - previousWorldGenChunkCoordinate.Y) >= Settings.RenderThresholdVertical
+                || MonoMath.Abs(ChunkCoordinate.Z - previousWorldGenChunkCoordinate.Z) >= Settings.RenderThresholdHorizontal)
             {
-                OnChunkCoordinateChanged();
+                OnWorldGenThresholdCrossed();
+                previousWorldGenChunkCoordinate = ChunkCoordinate;
             }
         }
 
         ViewMatrix = GetViewMatrix();
         ViewMatrixInverted = Matrix.Invert(ViewMatrix);
+        ViewFrustum = GetBoundingFrustum();
+    }
+
+    BoundingFrustum GetBoundingFrustum()
+        => new BoundingFrustum(ViewMatrix * MainGame.ProjectionMatrix);
+
+    public bool IsBoundingBoxInView(BoundingBox boundingBox)
+    {
+        return ViewFrustum.Intersects(boundingBox);
     }
 
     void HandleInput()

@@ -1,57 +1,92 @@
+using Microsoft.Xna.Framework;
+using System.Linq;
 using System.Threading.Tasks;
 
 public class World : IDebugRowProvider
 {
-    private Dictionary<Vector3Int, Chunk> chunks = new();
-    private List<ChunkMesh> chunkMeshes = new();
-    private static object _chunkMeshesLock = new object();
-
+    private readonly Dictionary<Vector3Int, Chunk> chunks = new();
+    private readonly Player player;
     public World(Player player)
     {
-        player.OnChunkCoordinateChanged += () => GenerateChunks(player);
+        this.player = player;
+        this.player.OnWorldGenThresholdCrossed += () => GenerateChunks();
 
-        GenerateChunks(player);
+        GenerateChunks();
     }
 
-    void GenerateChunks(Player player)
+    void GenerateChunks()
     {
-        var renderDistance = Settings.RenderDistanceChunks;
-        for (int x = -renderDistance; x <= renderDistance; x++)
+        var renderDistance = Settings.RenderDistanceChunks * Chunk.SIZE;
+        var chunksToBeGenerated = new List<Chunk>();
+        var chunksToBeRemoved = new List<Chunk>();
+
+        bool IsInsideRenderDistance(Vector3 worldPosition)
         {
-            for (int z = -renderDistance; z <= renderDistance; z++)
+            return (player.Position - worldPosition).LengthSquared() <= renderDistance * renderDistance;
+        }
+
+        foreach (var (coordinate, chunk) in chunks)
+        {
+            if(!IsInsideRenderDistance(chunk.WorldPosition))
             {
-                var coordinate = player.ChunkCoordinate + new Vector3Int(x, 0, z);
-
-                if (chunks.ContainsKey(coordinate))
-                    continue;
-
-                var chunk = new Chunk(coordinate);
-
-                chunks.Add(coordinate, chunk);
-
-                Task.Run(() =>
-                {
-                    chunk.Generate();
-                    lock (_chunkMeshesLock)
-                    {
-                        chunkMeshes.Add(chunk.Mesh);
-                    }
-                });
+                chunksToBeRemoved.Add(chunk);
             }
+        }
+
+        for(int y = -1; y <= 1; y++)
+        {
+            for (int x = -renderDistance; x <= renderDistance; x++)
+            {
+                for (int z = -renderDistance; z <= renderDistance; z++)
+                {
+                    var coordinate = player.ChunkCoordinate + new Vector3Int(x, y, z);
+                    var worldPosition = coordinate * Chunk.SIZE;
+
+                    if(!IsInsideRenderDistance(worldPosition))
+                        continue;
+
+                    if (chunks.ContainsKey(coordinate))
+                        continue;
+
+                    var chunk = new Chunk(coordinate);
+
+                    chunksToBeGenerated.Add(chunk);
+                }
+            }
+        }
+
+        var chunksOrderedByDistance = chunksToBeGenerated.OrderBy(chunk => (chunk.WorldPosition - player.Position).LengthSquared()).ToArray();
+        
+        Parallel.ForEach(chunksToBeGenerated, new ParallelOptions { MaxDegreeOfParallelism = 5 }, chunk => {
+            chunk.Generate();
+        });
+
+        foreach (var chunk in chunksToBeRemoved)
+        {
+            chunk.Destroy();
+            chunks.Remove(chunk.Coordinate);
+        }
+
+        foreach (var chunk in chunksToBeGenerated)
+        {
+            chunks.Add(chunk.Coordinate, chunk);
         }
     }
 
     public IEnumerable<ChunkMesh> GetChunkMeshes()
     {
-        lock (_chunkMeshesLock)
+        foreach (var (_, chunk) in chunks)
         {
-            foreach (var mesh in chunkMeshes)
-            {
-                if (mesh.IsEmpty)
-                    continue;
+            if (chunk.Mesh == null)
+                continue;
 
-                yield return mesh;
-            }
+            if (chunk.Mesh.IsEmpty)
+                continue;
+
+            if (Settings.UseFrustumCulling && !chunk.IsInViewOfPlayer(player))
+                continue;
+
+            yield return chunk.Mesh;
         }
     }
 

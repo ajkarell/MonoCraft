@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 public struct Vector3Int
 {
     public int X, Y, Z;
+    public int SquareMagnitude => X*X + Y*Y + Z*Z;
 
     public Vector3Int(int x, int y, int z)
     {
@@ -13,20 +14,30 @@ public struct Vector3Int
     }
 
     public static Vector3Int operator +(Vector3Int lhs, Vector3Int rhs)
-        => new Vector3Int(rhs.X + lhs.X, rhs.Y + lhs.Y, rhs.Z + lhs.Z);
+        => new(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z);
+
+    public static Vector3Int operator -(Vector3Int lhs, Vector3Int rhs)
+        => new(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z);
 
     public static Vector3 operator *(Vector3Int lhs, float rhs)
         => lhs.AsVector3() * rhs;
 
+    public static Vector3 operator *(Vector3Int lhs, int rhs)
+        => new(lhs.X * rhs, lhs.Y * rhs, lhs.Z * rhs);
+
+    public static bool operator ==(Vector3Int lhs, Vector3Int rhs)
+        => lhs.Equals(rhs);
+    public static bool operator !=(Vector3Int lhs, Vector3Int rhs)
+        => !lhs.Equals(rhs);
+
     public override bool Equals(object obj)
     {
-        if (obj is Vector3Int) return this.Equals((Vector3Int)obj);
-        else return false;
+        return obj is Vector3Int ? this.Equals((Vector3Int)obj) : false;
     }
 
     public bool Equals(Vector3Int other)
     {
-        return ((this.X == other.X) && (this.Y == other.Y) && (this.Z == other.Z));
+        return X == other.X && Y == other.Y && Z == other.Z;
     }
 
     public override int GetHashCode()
@@ -45,6 +56,11 @@ public static class Vector3IntExtensions
     public static Vector3 AsVector3(this Vector3Int that)
     {
         return new Vector3(that.X, that.Y, that.Z);
+    }
+
+    public static int SquaredDistanceTo(this Vector3Int that, Vector3Int to)
+    {
+        return (to - that).SquareMagnitude;
     }
 }
 

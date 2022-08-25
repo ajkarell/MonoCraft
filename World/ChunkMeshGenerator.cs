@@ -102,6 +102,12 @@ public class ChunkMesh
         indicesList.Clear();
         indicesList = null;
     }
+
+    public void Destroy()
+    {
+        Vertices = null;
+        Indices = null;
+    }
 }
 
 public static class ChunkMeshGenerator

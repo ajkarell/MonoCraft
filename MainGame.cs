@@ -18,7 +18,7 @@ public class MainGame : Game
 
     private Effect effect;
 
-    private Matrix projectionMatrix;
+    public static Matrix ProjectionMatrix;
     private static Vector2 screenCenter;
     private TextureArray textureArray;
 
@@ -43,7 +43,7 @@ public class MainGame : Game
         Window.AllowUserResizing = true;
         Window.ClientSizeChanged += (_, _) =>
         {
-            projectionMatrix = GetProjectionMatrix();
+            ProjectionMatrix = GetProjectionMatrix();
             screenCenter = GetScreenCenter();
         };
     }
@@ -55,7 +55,7 @@ public class MainGame : Game
             debugRowProviders.Add(debugRowProvider);
         }
 
-        projectionMatrix = GetProjectionMatrix();
+        ProjectionMatrix = GetProjectionMatrix();
         screenCenter = GetScreenCenter();
 
         base.Initialize();
@@ -67,7 +67,7 @@ public class MainGame : Game
         font = Content.Load<SpriteFont>("DebugFont");
 
         effect = Content.Load<Effect>("World");
-        effect.Parameters["Projection"].SetValue(projectionMatrix);
+        effect.Parameters["Projection"].SetValue(ProjectionMatrix);
 
         var textureCount = Block.RegisterBlockTextures();
         textureArray = new TextureArray(GraphicsDevice, 16, 16, textureCount);
@@ -134,7 +134,7 @@ public class MainGame : Game
     Matrix GetProjectionMatrix()
         => Matrix.CreatePerspectiveFieldOfView(60.0f * (MathF.PI / 180.0f), (float)graphics.PreferredBackBufferWidth / graphics.PreferredBackBufferHeight, 0.01f, 100_000f);
     Vector2 GetScreenCenter()
-        => new Vector2(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
+        => new(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
 
     private void DrawDebugUi(GameTime gameTime)
     {
