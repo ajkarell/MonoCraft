@@ -49,16 +49,39 @@ public class ChunkMesh
 
     public void AddFace(Vector3 blockPosition, BlockType blockType, BlockSide blockSide)
     {
+        int blockSideIndex = (int)blockSide;
         int textureIndex = Block.GetTextureIndex(blockType, blockSide);
 
-        var positions = ChunkMeshGenerator.blockPositionsBySide[(int)blockSide];
+        var positions = ChunkMeshGenerator.blockPositionsBySide[blockSideIndex];
         var normals = ChunkMeshGenerator.blockNormals;
-        var uvs = ChunkMeshGenerator.blockFaceUvs.Select((uv) => new Vector3(uv.X, uv.Y, textureIndex)).ToArray();
 
-        var faceVertices = positions.Select((p, i) => new BlockVertex(blockPosition + p, normals[(int)blockSide], uvs[i]));
+        var uvsWithTextureIndex = new Vector3[] {
+            new Vector3(0, 0, textureIndex),
+            new Vector3(0, 1, textureIndex),
+            new Vector3(1, 1, textureIndex),
+            new Vector3(1, 0, textureIndex),
+        };
+
+        var faceNormal = normals[blockSideIndex];
+
+        var faceVertices = new BlockVertex[] {
+            new BlockVertex(blockPosition + positions[0], faceNormal, uvsWithTextureIndex[0]),
+            new BlockVertex(blockPosition + positions[1], faceNormal, uvsWithTextureIndex[1]),
+            new BlockVertex(blockPosition + positions[2], faceNormal, uvsWithTextureIndex[2]),
+            new BlockVertex(blockPosition + positions[3], faceNormal, uvsWithTextureIndex[3]),
+        };
+
         verticesList.AddRange(faceVertices);
 
-        var indices = ChunkMeshGenerator.blockFaceIndices.Select((i) => triangleIndex + i);
+        var indices = new int[] {
+            triangleIndex + ChunkMeshGenerator.blockFaceIndices[0],
+            triangleIndex + ChunkMeshGenerator.blockFaceIndices[1],
+            triangleIndex + ChunkMeshGenerator.blockFaceIndices[2],
+            triangleIndex + ChunkMeshGenerator.blockFaceIndices[3],
+            triangleIndex + ChunkMeshGenerator.blockFaceIndices[4],
+            triangleIndex + ChunkMeshGenerator.blockFaceIndices[5],
+        };
+
         indicesList.AddRange(indices);
 
         triangleIndex += 4;
@@ -79,7 +102,6 @@ public class ChunkMesh
 
         indicesList.Clear();
         indicesList = null;
-
     }
 }
 
@@ -113,14 +135,6 @@ public static class ChunkMeshGenerator
     {
         0,1,2,
         2,3,0
-    };
-
-    public static readonly Vector2[] blockFaceUvs =
-    {
-        new Vector2(0,0),
-        new Vector2(0,1),
-        new Vector2(1,1),
-        new Vector2(1,0)
     };
 
     public static ChunkMesh GenerateChunkMesh(Chunk chunk)
@@ -161,6 +175,7 @@ public static class ChunkMeshGenerator
                 }
             }
         }
+
         chunkMesh.Finish();
         return chunkMesh;
     }

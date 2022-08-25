@@ -30,14 +30,14 @@ public class MainGame : Game
         graphics.SynchronizeWithVerticalRetrace = false;
         graphics.GraphicsProfile = GraphicsProfile.HiDef; //for shaders to work
 
-        IsFixedTimeStep = false;
-        // TargetElapsedTime = TimeSpan.FromSeconds(1.0f / 144.0f);
+        IsFixedTimeStep = true;
+        TargetElapsedTime = TimeSpan.FromSeconds(1.0f / 144.0f);
 
         Content.RootDirectory = "Content";
         IsMouseVisible = false;
 
-        world = new World();
         player = new Player(this);
+        world = new World(player);
 
         Components.Add(player);
         debugRowProviders.Add(world);
@@ -84,8 +84,6 @@ public class MainGame : Game
     {
         if (Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
-
-        world.Update(player);
 
         base.Update(gameTime);
     }

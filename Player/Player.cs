@@ -7,27 +7,34 @@ public class Player : GameComponent, IDebugRowProvider
 {
     public Vector3 Position { get; private set; }
     public Vector3Int ChunkCoordinate { get; private set; }
+    private Vector3Int previousChunkCoordinate;
+
     public Vector3 Velocity { get; private set; }
 
     public Vector3 Forward => ViewMatrixInverted.Forward;
     public Vector3 Right => ViewMatrixInverted.Right;
 
     public Matrix ViewMatrix { get; set; }
-    private Matrix ViewMatrixInverted { get; set; }
+    public Matrix ViewMatrixInverted { get; set; }
+
+    public delegate void OnChunkCoordinateChangedHandler();
+    public event OnChunkCoordinateChangedHandler OnChunkCoordinateChanged;
 
     private Vector3 eulerAngles;
-    MouseState previousMouseState;
+    private MouseState previousMouseState;
 
-    float MovementSpeed => 16.0f;
-    float FastMovementSpeed => MovementSpeed * 3.0f;
-    float LookSensitivity => 3.0f;
+    private float MovementSpeed => 16.0f;
+    private float FastMovementSpeed => MovementSpeed * 3.0f;
+    private float LookSensitivity => 3.0f;
 
-    readonly MainGame game;
+    private readonly MainGame game;
 
     public Player(MainGame game) : base(game)
     {
         this.game = game;
         Position = Vector3.Zero;
+        ChunkCoordinate = Position.AsChunkCoordinate();
+        previousChunkCoordinate = ChunkCoordinate;
         Velocity = Vector3.Zero;
         eulerAngles = Vector3.Zero;
     }
@@ -46,6 +53,10 @@ public class Player : GameComponent, IDebugRowProvider
         {
             Position += Velocity * gameTime.GetDeltaTimeSeconds();
             ChunkCoordinate = Position.AsChunkCoordinate();
+            if (!previousChunkCoordinate.Equals(ChunkCoordinate))
+            {
+                OnChunkCoordinateChanged();
+            }
         }
 
         ViewMatrix = GetViewMatrix();

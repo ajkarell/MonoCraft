@@ -6,7 +6,14 @@ public class World : IDebugRowProvider
     private List<ChunkMesh> chunkMeshes = new();
     private static object _chunkMeshesLock = new object();
 
-    public void Update(Player player)
+    public World(Player player)
+    {
+        player.OnChunkCoordinateChanged += () => GenerateChunks(player);
+
+        GenerateChunks(player);
+    }
+
+    void GenerateChunks(Player player)
     {
         var renderDistance = Settings.RenderDistanceChunks;
         for (int x = -renderDistance; x <= renderDistance; x++)
