@@ -1,12 +1,12 @@
 # MonoCraft
 
-A modest Minecraft clone built with MonoGame (C#, XNA) with the focus on world generation.
+A modest Minecraft clone built with MonoGame (C#, XNA) with focus on world generation.
 
-Made with the intent to learn low-level game development (no game engine), 3D graphics and procedural world generation.
+Made with the intent to learn low-level game development, 3D graphics and procedural world generation.
 
 ## Building
 
-Building is for **Windows-only**, because the game relies on Texture Arrays, which MonoGame's OpenGL version does not yet support.
+The project relies on DirectX for shaders, due to limitations in the OpenGL version that MonoGame supports. This means that building is for **Windows only (or possibly [through Wine on Linux](https://docs.monogame.net/articles/getting_started/1_setting_up_your_development_environment_ubuntu.html#optional-set-up-wine-for-effect-compilation))**.
 
 * Clone the project  
 ```git clone https://github.com/ajkarell/MonoCraft.git```
