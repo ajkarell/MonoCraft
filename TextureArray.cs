@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System.Linq;
 
+namespace MonoCraft;
+
 public class TextureArray : Texture2D
 {
     public TextureArray(GraphicsDevice graphicsDevice, int textureWidth, int textureHeight, int arraySize) :

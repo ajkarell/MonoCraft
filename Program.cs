@@ -1,3 +1,2 @@
-﻿
-using var game = new MonoMaa.MainGame();
+﻿using var game = new MainGame();
 game.Run();

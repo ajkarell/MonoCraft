@@ -1,6 +1,8 @@
 using Microsoft.Xna.Framework;
 
-public static class GameTimeExtensions
+namespace MonoCraft;
+
+internal static class GameTimeExtensions
 {
     public static float GetDeltaTimeSeconds(this GameTime that)
     {

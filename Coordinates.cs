@@ -1,16 +1,18 @@
-using System;
 using Microsoft.Xna.Framework;
+using System;
+
+namespace MonoCraft;
 
 public struct Vector3Int
 {
     public int X, Y, Z;
-    public int SquareMagnitude => X*X + Y*Y + Z*Z;
+    public int SquareMagnitude => X * X + Y * Y + Z * Z;
 
     public Vector3Int(int x, int y, int z)
     {
-        this.X = x;
-        this.Y = y;
-        this.Z = z;
+        X = x;
+        Y = y;
+        Z = z;
     }
 
     public static Vector3Int operator +(Vector3Int lhs, Vector3Int rhs)
@@ -25,14 +27,19 @@ public struct Vector3Int
     public static Vector3 operator *(Vector3Int lhs, int rhs)
         => new(lhs.X * rhs, lhs.Y * rhs, lhs.Z * rhs);
 
-    public static bool operator ==(Vector3Int lhs, Vector3Int rhs)
-        => lhs.Equals(rhs);
-    public static bool operator !=(Vector3Int lhs, Vector3Int rhs)
-        => !lhs.Equals(rhs);
+    public static bool operator ==(Vector3Int left, Vector3Int right)
+    {
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(Vector3Int left, Vector3Int right)
+    {
+        return !(left == right);
+    }
 
     public override bool Equals(object obj)
     {
-        return obj is Vector3Int ? this.Equals((Vector3Int)obj) : false;
+        return obj is Vector3Int other && this.Equals(other);
     }
 
     public bool Equals(Vector3Int other)
@@ -68,7 +75,7 @@ public static class Vector3Extensions
 {
     public static Vector3Int FloorToInt(this Vector3 that)
     {
-        return new Vector3Int(MonoMath.Floor(that.X), MonoMath.Floor(that.Y), MonoMath.Floor(that.Z));
+        return new Vector3Int(Math.Floor(that.X), Math.Floor(that.Y), Math.Floor(that.Z));
     }
 
     public static Vector3Int AsChunkCoordinate(this Vector3 that)

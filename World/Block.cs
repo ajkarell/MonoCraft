@@ -1,13 +1,15 @@
+using System.Collections.Generic;
+
+namespace MonoCraft;
+
 public static class Block
 {
     private static int CurrentTextureIndex = 0;
-    private static Dictionary<string, int> TextureIndices = new();
+    private static readonly Dictionary<string, int> TextureIndices = new();
 
     /// <summary>
     /// Tries to get texture index. If it doesn't exist, generate one.
     /// </summary>
-    /// <param name="textureFileName"></param>
-    /// <returns></returns>
     private static int GetTextureIndex(string textureFileName)
     {
         if (TextureIndices.TryGetValue(textureFileName, out var index))
@@ -22,18 +24,11 @@ public static class Block
         }
     }
 
-    private static Dictionary<(BlockType, BlockSide), int> BlockSivuTextureIndices = new();
+    private static readonly Dictionary<(BlockType, BlockSide), int> BlockSivuTextureIndices = new();
 
     /// <summary>
     /// Register texture for every side
     /// </summary>
-    /// <param name="tyyppi"></param>
-    /// <param name="textureTop"></param>
-    /// <param name="textureBottom"></param>
-    /// <param name="textureFront"></param>
-    /// <param name="textureRight"></param>
-    /// <param name="textureBack"></param>
-    /// <param name="textureLeft"></param>
     private static void RegisterBlockTextures(
         BlockType tyyppi,
         string textureTop,
@@ -54,10 +49,6 @@ public static class Block
     /// <summary>
     /// Register textures to top, bottom and sides
     /// </summary>
-    /// <param name="tyyppi"></param>
-    /// <param name="textureTop"></param>
-    /// <param name="textureBottom"></param>
-    /// <param name="textureSide"></param>
     private static void RegisterBlockTextures(
         BlockType tyyppi,
         string textureTop,
@@ -77,8 +68,6 @@ public static class Block
     /// <summary>
     /// Registers same texture to all sides
     /// </summary>
-    /// <param name="type"></param>
-    /// <param name="texture"></param>
     private static void RegisterBlockTextures(BlockType type, string texture)
     {
         RegisterBlockTextures(

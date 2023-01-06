@@ -47,12 +47,13 @@
 // VERSION: 1.0.1
 // https://github.com/Auburn/FastNoise
 
-using System;
 using System.Runtime.CompilerServices;
 
 // Switch between using floats or doubles for input position
 using FNLfloat = System.Single;
 //using FNLfloat = System.Double;
+
+namespace MonoCraft.Noise;
 
 public class FastNoiseLite
 {
@@ -539,7 +540,7 @@ public class FastNoiseLite
     private static float FastAbs(float f) { return f < 0 ? -f : f; }
 
     [MethodImpl(INLINE)]
-    private static float FastSqrt(float f) { return (float)Math.Sqrt(f); }
+    private static float FastSqrt(float f) { return (float)System.Math.Sqrt(f); }
 
     [MethodImpl(INLINE)]
     private static int FastFloor(FNLfloat f) { return f >= 0 ? (int)f : (int)f - 1; }

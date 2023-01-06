@@ -1,8 +1,11 @@
 using Microsoft.Xna.Framework;
+using MonoCraft.Noise;
+
+namespace MonoCraft;
 
 public static class TerrainGenerator
 {
-    static FastNoiseLite FastNoiseLite = new(seed: 280204);
+    static readonly FastNoiseLite FastNoiseLite = new(seed: 280204);
     static float NoiseScale => 0.5f;
 
     public static BlockType[] GenerateChunkBlocks(Vector3Int coordinate)
@@ -39,7 +42,9 @@ public static class TerrainGenerator
 
                     if (densities[index] > 0)
                     {
-                        var densityAbove = y + 1 < Chunk.SIZE ? densities[Chunk.Index(x, y + 1, z)] : float.MaxValue;
+                        var densityAbove = y + 1 >= Chunk.SIZE
+                            ? float.MaxValue
+                            : densities[Chunk.Index(x, y + 1, z)];
 
                         block = densityAbove > 0 ? BlockType.Dirt : BlockType.Grass;
                     }

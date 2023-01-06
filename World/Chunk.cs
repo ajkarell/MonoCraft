@@ -1,5 +1,7 @@
-using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
+using System.Runtime.CompilerServices;
+
+namespace MonoCraft;
 
 public class Chunk
 {
@@ -11,7 +13,7 @@ public class Chunk
     public Vector3 WorldPosition { get; init; }
     public BlockType[] Blocks { get; private set; }
 
-    public ChunkMesh Mesh  = null;
+    public ChunkMesh Mesh = null;
 
     public BoundingBox BoundingBox { get; private set; }
 

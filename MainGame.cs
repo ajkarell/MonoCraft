@@ -1,28 +1,29 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
-namespace MonoMaa;
+namespace MonoCraft;
 
 public class MainGame : Game
 {
-    private GraphicsDeviceManager graphics;
+    private readonly GraphicsDeviceManager graphics;
     private SpriteBatch spriteBatch;
     private SpriteFont font;
 
+    private readonly Player player;
     private World world;
-    private Player player;
 
     private Effect effect;
 
     public static Matrix ProjectionMatrix;
-    private static Vector2 screenCenter;
+    public static Vector2 ScreenCenter;
+
     private TextureArray textureArray;
 
-    private List<IDebugRowProvider> debugRowProviders = new();
+    private readonly List<IDebugRowProvider> debugRowProviders = new();
 
     public MainGame()
     {
@@ -43,8 +44,8 @@ public class MainGame : Game
         Window.AllowUserResizing = true;
         Window.ClientSizeChanged += (_, _) =>
         {
-            ProjectionMatrix = GetProjectionMatrix();
-            screenCenter = GetScreenCenter();
+            ProjectionMatrix = CreateProjectionMatrix();
+            ScreenCenter = new(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
         };
     }
 
@@ -55,8 +56,9 @@ public class MainGame : Game
             debugRowProviders.Add(debugRowProvider);
         }
 
-        ProjectionMatrix = GetProjectionMatrix();
-        screenCenter = GetScreenCenter();
+        ScreenCenter = new(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
+
+        ProjectionMatrix = CreateProjectionMatrix();
 
         base.Initialize();
     }
@@ -97,7 +99,7 @@ public class MainGame : Game
 
         effect.Parameters["View"].SetValue(player.ViewMatrix);
 
-        var chunkMeshes = world.GetChunkMeshes();
+        var chunkMeshes = world.GetChunkMeshesDueRender();
         foreach (var mesh in chunkMeshes)
         {
             effect.Parameters["World"].SetValue(mesh.WorldMatrix);
@@ -126,15 +128,8 @@ public class MainGame : Game
         spriteBatch.End();
     }
 
-    public void CenterMouse()
-    {
-        Mouse.SetPosition((int)screenCenter.X, (int)screenCenter.Y);
-    }
-
-    Matrix GetProjectionMatrix()
+    Matrix CreateProjectionMatrix()
         => Matrix.CreatePerspectiveFieldOfView(60.0f * (MathF.PI / 180.0f), (float)graphics.PreferredBackBufferWidth / graphics.PreferredBackBufferHeight, 0.01f, 100_000f);
-    Vector2 GetScreenCenter()
-        => new(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
 
     private void DrawDebugUi(GameTime gameTime)
     {

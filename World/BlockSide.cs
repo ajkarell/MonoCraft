@@ -1,3 +1,5 @@
+namespace MonoCraft;
+
 public enum BlockSide : byte
 {
     Left = 0,

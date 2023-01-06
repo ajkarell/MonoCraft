@@ -1,6 +1,8 @@
 using System.Runtime.CompilerServices;
 
-public static class MonoMath
+namespace MonoCraft;
+
+public static class Math
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Floor(float x)

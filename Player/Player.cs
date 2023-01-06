@@ -1,7 +1,9 @@
-using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using MonoMaa;
+using System;
+using System.Collections.Generic;
+
+namespace MonoCraft;
 
 public class Player : GameComponent, IDebugRowProvider
 {
@@ -24,15 +26,13 @@ public class Player : GameComponent, IDebugRowProvider
     private Vector3 eulerAngles;
     private MouseState previousMouseState;
 
-    private float MovementSpeed => 16.0f;
+    private readonly float MovementSpeed = 16.0f;
     private float FastMovementSpeed => MovementSpeed * 3.0f;
-    private float LookSensitivity => 1.0f;
 
-    private readonly MainGame game;
+    private readonly float LookSensitivity = 1.0f;
 
     public Player(MainGame game) : base(game)
     {
-        this.game = game;
         Position = Vector3.Zero;
         ChunkCoordinate = Position.AsChunkCoordinate();
         previousWorldGenChunkCoordinate = ChunkCoordinate;
@@ -54,9 +54,9 @@ public class Player : GameComponent, IDebugRowProvider
             Position += Velocity * gameTime.GetDeltaTimeSeconds();
             ChunkCoordinate = Position.AsChunkCoordinate();
 
-            if (MonoMath.Abs(ChunkCoordinate.X - previousWorldGenChunkCoordinate.X) >= Settings.RenderThresholdHorizontal
-                || MonoMath.Abs(ChunkCoordinate.Y - previousWorldGenChunkCoordinate.Y) >= Settings.RenderThresholdVertical
-                || MonoMath.Abs(ChunkCoordinate.Z - previousWorldGenChunkCoordinate.Z) >= Settings.RenderThresholdHorizontal)
+            if (Math.Abs(ChunkCoordinate.X - previousWorldGenChunkCoordinate.X) >= Settings.RenderThresholdHorizontal
+                || Math.Abs(ChunkCoordinate.Y - previousWorldGenChunkCoordinate.Y) >= Settings.RenderThresholdVertical
+                || Math.Abs(ChunkCoordinate.Z - previousWorldGenChunkCoordinate.Z) >= Settings.RenderThresholdHorizontal)
             {
                 OnWorldGenThresholdCrossed();
                 previousWorldGenChunkCoordinate = ChunkCoordinate;
@@ -68,17 +68,13 @@ public class Player : GameComponent, IDebugRowProvider
         ViewFrustum = GetBoundingFrustum();
     }
 
-    BoundingFrustum GetBoundingFrustum()
-        => new BoundingFrustum(ViewMatrix * MainGame.ProjectionMatrix);
+    BoundingFrustum GetBoundingFrustum() => new(ViewMatrix * MainGame.ProjectionMatrix);
 
-    public bool IsBoundingBoxInView(BoundingBox boundingBox)
-    {
-        return ViewFrustum.Intersects(boundingBox);
-    }
+    public bool IsBoundingBoxInView(BoundingBox boundingBox) => ViewFrustum.Intersects(boundingBox);
 
     void HandleInput()
     {
-        if (!game.IsActive)
+        if (!Game.IsActive)
             return;
 
         var keyState = Keyboard.GetState();
@@ -115,10 +111,10 @@ public class Player : GameComponent, IDebugRowProvider
             eulerAngles.Y -= mouseDelta.X * LookSensitivity;
         }
 
-        eulerAngles.X = MonoMath.Clamp(eulerAngles.X, -89.9f, 89.9f);
-        eulerAngles.Y = MonoMath.Repeat(eulerAngles.Y, 0f, 360f);
+        eulerAngles.X = Math.Clamp(eulerAngles.X, -89.9f, 89.9f);
+        eulerAngles.Y = Math.Repeat(eulerAngles.Y, 0f, 360f);
 
-        game.CenterMouse();
+        Mouse.SetPosition((int)MainGame.ScreenCenter.X, (int)MainGame.ScreenCenter.Y);
 
         previousMouseState = Mouse.GetState();
     }
@@ -128,29 +124,30 @@ public class Player : GameComponent, IDebugRowProvider
         var pitchRadians = MathHelper.ToRadians(eulerAngles.X);
         var yawRadians = MathHelper.ToRadians(eulerAngles.Y);
 
-        float cosPitch = MathF.Cos(pitchRadians);
-        float sinPitch = MathF.Sin(pitchRadians);
-        float cosYaw = MathF.Cos(yawRadians);
-        float sinYaw = MathF.Sin(yawRadians);
+        var cosPitch = MathF.Cos(pitchRadians);
+        var sinPitch = MathF.Sin(pitchRadians);
+        var cosYaw = MathF.Cos(yawRadians);
+        var sinYaw = MathF.Sin(yawRadians);
 
-        Vector3 xAxis = new Vector3(cosYaw, 0, -sinYaw);
-        Vector3 yAxis = new Vector3(sinYaw * sinPitch, cosPitch, cosYaw * sinPitch);
-        Vector3 zAxis = new Vector3(sinYaw * cosPitch, -sinPitch, cosPitch * cosYaw);
-        float dotX = Vector3.Dot(xAxis, Position);
-        float dotY = Vector3.Dot(yAxis, Position);
-        float dotZ = Vector3.Dot(zAxis, Position);
+        var xAxis = new Vector3(cosYaw, 0, -sinYaw);
+        var yAxis = new Vector3(sinYaw * sinPitch, cosPitch, cosYaw * sinPitch);
+        var zAxis = new Vector3(sinYaw * cosPitch, -sinPitch, cosPitch * cosYaw);
+
+        var dotX = Vector3.Dot(xAxis, Position);
+        var dotY = Vector3.Dot(yAxis, Position);
+        var dotZ = Vector3.Dot(zAxis, Position);
 
         return new Matrix(
-            new Vector4(xAxis.X, yAxis.X, zAxis.X, 0),
-            new Vector4(xAxis.Y, yAxis.Y, zAxis.Y, 0),
-            new Vector4(xAxis.Z, yAxis.Z, zAxis.Z, 0),
-            new Vector4(-dotX, -dotY, -dotZ, 1));
+            new(xAxis.X, yAxis.X, zAxis.X, 0),
+            new(xAxis.Y, yAxis.Y, zAxis.Y, 0),
+            new(xAxis.Z, yAxis.Z, zAxis.Z, 0),
+            new(-dotX, -dotY, -dotZ, 1));
     }
 
     public IEnumerable<string> GetDebugRows()
     {
-        yield return $"Pos: {Position}";
-        yield return $"ChunkC: {ChunkCoordinate}";
+        yield return $"Position: {Position}";
+        yield return $"Chunk coordinate: {ChunkCoordinate}";
         yield return $"Angles: {eulerAngles}";
     }
 }

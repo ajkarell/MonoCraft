@@ -1,5 +1,8 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Collections.Generic;
+
+namespace MonoCraft;
 
 public struct BlockVertex : IVertexType
 {
@@ -7,7 +10,7 @@ public struct BlockVertex : IVertexType
     public Vector3 Normal;
     public Vector3 TextureCoordinate;
 
-    public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration
+    public static readonly VertexDeclaration VertexDeclaration = new
     (
         new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
         new VertexElement(12, VertexElementFormat.Vector3, VertexElementUsage.Normal, 0),
@@ -55,30 +58,30 @@ public class ChunkMesh
         var normals = ChunkMeshGenerator.blockNormals;
 
         var uvsWithTextureIndex = new Vector3[] {
-            new Vector3(0, 0, textureIndex),
-            new Vector3(0, 1, textureIndex),
-            new Vector3(1, 1, textureIndex),
-            new Vector3(1, 0, textureIndex),
+            new(0, 0, textureIndex),
+            new(0, 1, textureIndex),
+            new(1, 1, textureIndex),
+            new(1, 0, textureIndex),
         };
 
         var faceNormal = normals[blockSideIndex];
 
         var faceVertices = new BlockVertex[] {
-            new BlockVertex(blockPosition + positions[0], faceNormal, uvsWithTextureIndex[0]),
-            new BlockVertex(blockPosition + positions[1], faceNormal, uvsWithTextureIndex[1]),
-            new BlockVertex(blockPosition + positions[2], faceNormal, uvsWithTextureIndex[2]),
-            new BlockVertex(blockPosition + positions[3], faceNormal, uvsWithTextureIndex[3]),
+            new(blockPosition + positions[0], faceNormal, uvsWithTextureIndex[0]),
+            new(blockPosition + positions[1], faceNormal, uvsWithTextureIndex[1]),
+            new(blockPosition + positions[2], faceNormal, uvsWithTextureIndex[2]),
+            new(blockPosition + positions[3], faceNormal, uvsWithTextureIndex[3]),
         };
 
         verticesList.AddRange(faceVertices);
 
         var indices = new int[] {
-            triangleIndex + ChunkMeshGenerator.blockFaceIndices[0],
-            triangleIndex + ChunkMeshGenerator.blockFaceIndices[1],
-            triangleIndex + ChunkMeshGenerator.blockFaceIndices[2],
-            triangleIndex + ChunkMeshGenerator.blockFaceIndices[3],
-            triangleIndex + ChunkMeshGenerator.blockFaceIndices[4],
-            triangleIndex + ChunkMeshGenerator.blockFaceIndices[5],
+            triangleIndex + 0,
+            triangleIndex + 1,
+            triangleIndex + 2,
+            triangleIndex + 2,
+            triangleIndex + 3,
+            triangleIndex + 0,
         };
 
         indicesList.AddRange(indices);
@@ -136,12 +139,6 @@ public static class ChunkMeshGenerator
         new[] {   UP+FORWARD,             FORWARD,            RIGHT+FORWARD,      RIGHT + UP + FORWARD},  // CUBE_FRONT   5
     };
 
-    public static readonly int[] blockFaceIndices =
-    {
-        0,1,2,
-        2,3,0
-    };
-
     public static ChunkMesh GenerateChunkMesh(Chunk chunk)
     {
         var chunkMesh = new ChunkMesh(chunk.WorldPosition);
@@ -165,7 +162,7 @@ public static class ChunkMeshGenerator
                         || neighborPosition.Y >= Chunk.SIZE || neighborPosition.Y < 0
                         || neighborPosition.Z >= Chunk.SIZE || neighborPosition.Z < 0)
                         {
-                            // continue;
+                            // still add face for now...
                         }
                         else
                         {

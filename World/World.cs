@@ -1,6 +1,9 @@
 using Microsoft.Xna.Framework;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
+namespace MonoCraft;
 
 public class World : IDebugRowProvider
 {
@@ -27,13 +30,13 @@ public class World : IDebugRowProvider
 
         foreach (var (coordinate, chunk) in chunks)
         {
-            if(!IsInsideRenderDistance(chunk.WorldPosition))
+            if (!IsInsideRenderDistance(chunk.WorldPosition))
             {
                 chunksToBeRemoved.Add(chunk);
             }
         }
 
-        for(int y = -1; y <= 1; y++)
+        for (int y = -1; y <= 1; y++)
         {
             for (int x = -renderDistance; x <= renderDistance; x++)
             {
@@ -42,7 +45,7 @@ public class World : IDebugRowProvider
                     var coordinate = player.ChunkCoordinate + new Vector3Int(x, y, z);
                     var worldPosition = coordinate * Chunk.SIZE;
 
-                    if(!IsInsideRenderDistance(worldPosition))
+                    if (!IsInsideRenderDistance(worldPosition))
                         continue;
 
                     if (chunks.ContainsKey(coordinate))
@@ -55,9 +58,10 @@ public class World : IDebugRowProvider
             }
         }
 
-        var chunksOrderedByDistance = chunksToBeGenerated.OrderBy(chunk => (chunk.WorldPosition - player.Position).LengthSquared()).ToArray();
-        
-        Parallel.ForEach(chunksToBeGenerated, new ParallelOptions { MaxDegreeOfParallelism = 5 }, chunk => {
+        var chunksOrderedByDistance = chunksToBeGenerated.OrderBy(chunk => (chunk.WorldPosition - player.Position).LengthSquared());
+
+        Parallel.ForEach(chunksToBeGenerated, new ParallelOptions { MaxDegreeOfParallelism = 5 }, chunk =>
+        {
             chunk.Generate();
         });
 
@@ -73,7 +77,7 @@ public class World : IDebugRowProvider
         }
     }
 
-    public IEnumerable<ChunkMesh> GetChunkMeshes()
+    public IEnumerable<ChunkMesh> GetChunkMeshesDueRender()
     {
         foreach (var (_, chunk) in chunks)
         {
@@ -92,6 +96,6 @@ public class World : IDebugRowProvider
 
     public IEnumerable<string> GetDebugRows()
     {
-        yield return $"ChunksGenerated: {chunks.Count}";
+        yield return $"Chunks in memory: {chunks.Count}";
     }
 }
