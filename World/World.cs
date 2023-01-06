@@ -9,6 +9,7 @@ public class World : IDebugRowProvider
 {
     private readonly Dictionary<Vector3Int, Chunk> chunks = new();
     private readonly Player player;
+
     public World(Player player)
     {
         this.player = player;
@@ -87,7 +88,7 @@ public class World : IDebugRowProvider
             if (chunk.Mesh.IsEmpty)
                 continue;
 
-            if (Settings.UseFrustumCulling && !chunk.IsInViewOfPlayer(player))
+            if (Settings.UseFrustumCulling && !player.ViewFrustum.Intersects(chunk.BoundingBox))
                 continue;
 
             yield return chunk.Mesh;

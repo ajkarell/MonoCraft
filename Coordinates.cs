@@ -80,6 +80,6 @@ public static class Vector3Extensions
 
     public static Vector3Int AsChunkCoordinate(this Vector3 that)
     {
-        return FloorToInt(that / (float)Chunk.SIZE);
+        return FloorToInt(that / Chunk.SIZE);
     }
 }

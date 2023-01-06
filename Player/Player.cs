@@ -16,8 +16,20 @@ public class Player : GameComponent, IDebugRowProvider
     public Vector3 Forward => ViewMatrixInverted.Forward;
     public Vector3 Right => ViewMatrixInverted.Right;
 
-    public Matrix ViewMatrix { get; private set; }
+    private Matrix _viewMatrix;
+
+    public Matrix ViewMatrix
+    {
+        get { return _viewMatrix; }
+        private set 
+        { 
+            _viewMatrix = value; 
+            ViewMatrixInverted = Matrix.Invert(_viewMatrix); 
+        }
+    }
+
     public Matrix ViewMatrixInverted { get; private set; }
+
     public BoundingFrustum ViewFrustum { get; private set; }
 
     public delegate void OnWorldGenThresholdCrossedHandler();
@@ -39,9 +51,8 @@ public class Player : GameComponent, IDebugRowProvider
         Velocity = Vector3.Zero;
         eulerAngles = Vector3.Zero;
 
-        ViewMatrix = GetViewMatrix();
-        ViewMatrixInverted = Matrix.Invert(ViewMatrix);
-        ViewFrustum = GetBoundingFrustum();
+        ViewMatrix = CalculateViewMatrix();
+        ViewFrustum = CalculateViewFrustum();
     }
 
     public override void Update(GameTime gameTime)
@@ -54,23 +65,18 @@ public class Player : GameComponent, IDebugRowProvider
             Position += Velocity * gameTime.GetDeltaTimeSeconds();
             ChunkCoordinate = Position.AsChunkCoordinate();
 
-            if (Math.Abs(ChunkCoordinate.X - previousWorldGenChunkCoordinate.X) >= Settings.RenderThresholdHorizontal
-                || Math.Abs(ChunkCoordinate.Y - previousWorldGenChunkCoordinate.Y) >= Settings.RenderThresholdVertical
-                || Math.Abs(ChunkCoordinate.Z - previousWorldGenChunkCoordinate.Z) >= Settings.RenderThresholdHorizontal)
+            if (Math.Abs(ChunkCoordinate.X - previousWorldGenChunkCoordinate.X) >= Settings.WorldGenThresholdHorizontal
+                || Math.Abs(ChunkCoordinate.Y - previousWorldGenChunkCoordinate.Y) >= Settings.WorldGenThresholdVertical
+                || Math.Abs(ChunkCoordinate.Z - previousWorldGenChunkCoordinate.Z) >= Settings.WorldGenThresholdHorizontal)
             {
                 OnWorldGenThresholdCrossed();
                 previousWorldGenChunkCoordinate = ChunkCoordinate;
             }
         }
 
-        ViewMatrix = GetViewMatrix();
-        ViewMatrixInverted = Matrix.Invert(ViewMatrix);
-        ViewFrustum = GetBoundingFrustum();
+        ViewMatrix = CalculateViewMatrix();
+        ViewFrustum = CalculateViewFrustum();
     }
-
-    BoundingFrustum GetBoundingFrustum() => new(ViewMatrix * MainGame.ProjectionMatrix);
-
-    public bool IsBoundingBoxInView(BoundingBox boundingBox) => ViewFrustum.Intersects(boundingBox);
 
     void HandleInput()
     {
@@ -119,7 +125,9 @@ public class Player : GameComponent, IDebugRowProvider
         previousMouseState = Mouse.GetState();
     }
 
-    Matrix GetViewMatrix()
+    BoundingFrustum CalculateViewFrustum() => new(ViewMatrix * MainGame.ProjectionMatrix);
+
+    Matrix CalculateViewMatrix()
     {
         var pitchRadians = MathHelper.ToRadians(eulerAngles.X);
         var yawRadians = MathHelper.ToRadians(eulerAngles.Y);

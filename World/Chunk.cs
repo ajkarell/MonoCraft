@@ -30,9 +30,6 @@ public class Chunk
         Mesh = ChunkMeshGenerator.GenerateChunkMesh(this);
     }
 
-    public bool IsInViewOfPlayer(Player player)
-        => player.IsBoundingBoxInView(BoundingBox);
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Index(int x, int y, int z)
         => y * SIZE_SQUARED + z * SIZE + x;

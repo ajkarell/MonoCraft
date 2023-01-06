@@ -5,7 +5,7 @@ namespace MonoCraft;
 
 public static class TerrainGenerator
 {
-    static readonly FastNoiseLite FastNoiseLite = new(seed: 28/02/04);
+    static readonly FastNoiseLite FastNoiseLite = new(seed: 28 / 02 / 04);
     static float NoiseScale => 0.50f;
 
     public static BlockType[] GenerateChunkBlocks(Vector3Int coordinate)
@@ -38,7 +38,7 @@ public static class TerrainGenerator
             if (adjustedDensity <= 0)
                 return BlockType.Air;
 
-            if (adjustedDensity <= 0.20f) 
+            if (adjustedDensity <= 0.20f)
             {
                 var densityAbove = y + 1 >= Chunk.SIZE
                     ? float.MaxValue

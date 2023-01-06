@@ -44,7 +44,7 @@ public class MainGame : Game
         Window.AllowUserResizing = true;
         Window.ClientSizeChanged += (_, _) =>
         {
-            ProjectionMatrix = CreateProjectionMatrix();
+            ProjectionMatrix = CalculateProjectionMatrix();
             ScreenCenter = new(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
         };
     }
@@ -58,7 +58,7 @@ public class MainGame : Game
 
         ScreenCenter = new(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
 
-        ProjectionMatrix = CreateProjectionMatrix();
+        ProjectionMatrix = CalculateProjectionMatrix();
 
         base.Initialize();
     }
@@ -128,7 +128,7 @@ public class MainGame : Game
         spriteBatch.End();
     }
 
-    Matrix CreateProjectionMatrix()
+    Matrix CalculateProjectionMatrix()
         => Matrix.CreatePerspectiveFieldOfView(60.0f * (MathF.PI / 180.0f), (float)graphics.PreferredBackBufferWidth / graphics.PreferredBackBufferHeight, 0.01f, 100_000f);
 
     private void DrawDebugUi(GameTime gameTime)
