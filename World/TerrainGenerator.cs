@@ -5,8 +5,8 @@ namespace MonoCraft;
 
 public static class TerrainGenerator
 {
-    static readonly FastNoiseLite FastNoiseLite = new(seed: 280204);
-    static float NoiseScale => 0.5f;
+    static readonly FastNoiseLite FastNoiseLite = new(seed: 28/02/04);
+    static float NoiseScale => 0.50f;
 
     public static BlockType[] GenerateChunkBlocks(Vector3Int coordinate)
     {
@@ -21,14 +21,36 @@ public static class TerrainGenerator
                 {
                     var worldPosition = coordinate * Chunk.SIZE + new Vector3(x, y, z);
 
-                    var density = FastNoiseLite.GetNoise(worldPosition.X * NoiseScale, worldPosition.Y * NoiseScale, worldPosition.Z * NoiseScale)
-                                        * 30f;
-
-                    density -= worldPosition.Y;
+                    var density = FastNoiseLite.GetNoise(worldPosition.X * NoiseScale, worldPosition.Y * NoiseScale, worldPosition.Z * NoiseScale);
 
                     densities[Chunk.Index(x, y, z)] = density;
                 }
             }
+        }
+
+        BlockType CalculateBlockType(int x, int y, int z)
+        {
+            var worldY = y + coordinate.Y * Chunk.SIZE;
+
+            var density = densities[Chunk.Index(x, y, z)];
+            var adjustedDensity = density - worldY / 25.0f;
+
+            if (adjustedDensity <= 0)
+                return BlockType.Air;
+
+            if (adjustedDensity <= 0.20f) 
+            {
+                var densityAbove = y + 1 >= Chunk.SIZE
+                    ? float.MaxValue
+                    : densities[Chunk.Index(x, y + 1, z)];
+
+                if (densityAbove <= 0)
+                    return BlockType.Grass;
+                else
+                    return BlockType.Dirt;
+            }
+
+            return BlockType.Stone;
         }
 
         for (int y = 0; y < Chunk.SIZE; y++)
@@ -38,18 +60,8 @@ public static class TerrainGenerator
                 for (int z = 0; z < Chunk.SIZE; z++)
                 {
                     int index = Chunk.Index(x, y, z);
-                    BlockType block = BlockType.Air;
 
-                    if (densities[index] > 0)
-                    {
-                        var densityAbove = y + 1 >= Chunk.SIZE
-                            ? float.MaxValue
-                            : densities[Chunk.Index(x, y + 1, z)];
-
-                        block = densityAbove > 0 ? BlockType.Dirt : BlockType.Grass;
-                    }
-
-                    blocks[index] = block;
+                    blocks[index] = CalculateBlockType(x, y, z);
                 }
             }
         }

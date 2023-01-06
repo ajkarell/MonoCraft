@@ -88,6 +88,9 @@ public static class Block
     private const string TEXTURE_DIRT = "dirt";
     private const string TEXTURE_GRASS_TOP = "grass_top";
     private const string TEXTURE_GRASS_SIDE = "grass_side";
+    private const string TEXTURE_STONE = "stone";
+    private const string TEXTURE_SAND = "sand";
+    private const string TEXTURE_WATER = "water";
 
     public static int RegisterBlockTextures()
     {
@@ -97,9 +100,9 @@ public static class Block
             textureTop: TEXTURE_GRASS_TOP,
             textureBottom: TEXTURE_DIRT,
             textureSide: TEXTURE_GRASS_SIDE);
-        // RegisterBlockTextures(BlockType.Hiekka, TEXTURE_HIEKKA);
-        // RegisterBlockTextures(BlockType.Vesi, TEXTURE_VESI);
-        // RegisterBlockTextures(BlockType.Kivi, TEXTURE_KIVI);
+        RegisterBlockTextures(BlockType.Stone, TEXTURE_STONE);
+        RegisterBlockTextures(BlockType.Sand, TEXTURE_SAND);
+        RegisterBlockTextures(BlockType.Water, TEXTURE_WATER);
 
         return TextureIndices.Count;
     }
