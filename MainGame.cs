@@ -31,6 +31,9 @@ public class MainGame : Game
         graphics.SynchronizeWithVerticalRetrace = false;
         graphics.GraphicsProfile = GraphicsProfile.HiDef; //for shaders to work
 
+        graphics.PreferredBackBufferWidth = 1280;
+        graphics.PreferredBackBufferHeight = 720;
+
         IsFixedTimeStep = true;
         TargetElapsedTime = TimeSpan.FromSeconds(1.0f / 144.0f);
 
@@ -40,7 +43,7 @@ public class MainGame : Game
         player = new Player(this);
 
         Components.Add(player);
-
+        
         Window.AllowUserResizing = true;
         Window.ClientSizeChanged += (_, _) =>
         {
