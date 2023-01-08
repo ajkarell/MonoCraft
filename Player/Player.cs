@@ -7,7 +7,18 @@ namespace MonoCraft;
 
 public class Player : GameComponent, IDebugRowProvider
 {
-    public Vector3 Position { get; private set; }
+    private Vector3 _position;
+
+    public Vector3 Position
+    {
+        get { return _position; }
+        private set 
+        { 
+            _position = value; 
+            ChunkCoordinate = _position.AsChunkCoordinate(); 
+        }
+    }
+
     public Vector3Int ChunkCoordinate { get; private set; }
     private Vector3Int previousWorldGenChunkCoordinate;
 
@@ -63,7 +74,6 @@ public class Player : GameComponent, IDebugRowProvider
         if (Velocity != Vector3.Zero)
         {
             Position += Velocity * gameTime.GetDeltaTimeSeconds();
-            ChunkCoordinate = Position.AsChunkCoordinate();
 
             if (Math.Abs(ChunkCoordinate.X - previousWorldGenChunkCoordinate.X) >= Settings.WorldGenThresholdHorizontal
                 || Math.Abs(ChunkCoordinate.Y - previousWorldGenChunkCoordinate.Y) >= Settings.WorldGenThresholdVertical
