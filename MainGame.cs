@@ -25,10 +25,11 @@ public class MainGame : Game
 
     private readonly List<IDebugRowProvider> debugRowProviders = new();
 
+    private double fps = 0;
+
     public MainGame()
     {
         graphics = new GraphicsDeviceManager(this);
-        graphics.SynchronizeWithVerticalRetrace = false;
         graphics.GraphicsProfile = GraphicsProfile.HiDef; //for shaders to work
 
         graphics.PreferredBackBufferWidth = 1280;
@@ -140,7 +141,7 @@ public class MainGame : Game
     {
         var debugText = new StringBuilder();
 
-        var fps = 1.0f / gameTime.GetDeltaTimeSeconds();
+        fps += ((1 / gameTime.ElapsedGameTime.TotalSeconds) - fps) * 0.1;
         debugText.AppendLine($"FPS: {fps:0}");
 
         foreach (var debugRowProvider in debugRowProviders)
