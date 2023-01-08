@@ -34,8 +34,10 @@ public class MainGame : Game
         graphics.PreferredBackBufferWidth = 1280;
         graphics.PreferredBackBufferHeight = 720;
 
+        graphics.SynchronizeWithVerticalRetrace = false;
+
         IsFixedTimeStep = true;
-        TargetElapsedTime = TimeSpan.FromSeconds(1.0f / 144.0f);
+        TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 144.0));
 
         Content.RootDirectory = "Content";
         IsMouseVisible = false;
