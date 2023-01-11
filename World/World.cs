@@ -73,16 +73,13 @@ public class World : IDebugRowProvider
 
     public void Update()
     {
-        Task.Run(() =>
-        {
-            chunksInView = chunks.Values
-                .Where(chunk => player.ViewFrustum.Intersects(chunk.BoundingBox))
-                .OrderBy(chunk => (chunk.WorldPosition - player.Position).LengthSquared())
-                .ToList(); // explicit ToList() to avoid collection changes during loop
+        chunksInView = chunks.Values
+            .Where(chunk => player.ViewFrustum.Intersects(chunk.BoundingBox))
+            .ToList(); // explicit ToList() to avoid collection changes during loop
 
         Task.Run(() =>
         {
-            foreach (var chunk in chunksInView)
+            foreach (var chunk in chunksInView.OrderBy(chunk => (chunk.WorldPosition - player.Position).LengthSquared()))
             {
                 if (chunk.State == ChunkState.NotGenerated)
                     chunk.Generate();
