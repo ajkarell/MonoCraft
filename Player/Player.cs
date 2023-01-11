@@ -66,8 +66,6 @@ public class Player : GameComponent, IDebugRowProvider
     private readonly float MovementSpeed = 16.0f;
     private float FastMovementSpeed => MovementSpeed * 3.0f;
 
-    private readonly float LookSensitivity = 1.0f;
-
     private MouseState previousMouseState;
 
     public Player(Game game) : base(game)
@@ -85,7 +83,7 @@ public class Player : GameComponent, IDebugRowProvider
     {
         Velocity = Vector3.Zero;
 
-        HandleInput();
+        HandleInput(gameTime);
 
         if (Velocity != Vector3.Zero)
         {
@@ -101,7 +99,7 @@ public class Player : GameComponent, IDebugRowProvider
         }
     }
 
-    void HandleInput()
+    void HandleInput(GameTime gameTime)
     {
         if (!Game.IsActive)
             return;
@@ -137,7 +135,7 @@ public class Player : GameComponent, IDebugRowProvider
         var mouseDelta = mouseState.Position - previousMouseState.Position;
         if (mouseDelta.X != 0 || mouseDelta.Y != 0)
         {
-            EulerAngles -= new Vector3(mouseDelta.Y * LookSensitivity, mouseDelta.X * LookSensitivity, 0f);
+            EulerAngles -= new Vector3(mouseDelta.Y, mouseDelta.X, 0f) * Settings.LookSensitivity * gameTime.GetDeltaTimeSeconds();
         }
 
         MainGame.CenterMouse();
