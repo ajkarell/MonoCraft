@@ -149,8 +149,8 @@ public class Player : GameComponent, IDebugRowProvider
 
     public IEnumerable<string> GetDebugRows()
     {
-        yield return $"Position: {Position}";
+        yield return $"Position: {Position.FloorToInt()}";
         yield return $"Chunk coordinate: {ChunkCoordinate}";
-        yield return $"Orientation: {EulerAngles}";
+        yield return $"Orientation: {EulerAngles.FloorToInt()}";
     }
 }
