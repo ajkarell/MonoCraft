@@ -3,6 +3,13 @@ using System.Runtime.CompilerServices;
 
 namespace MonoCraft;
 
+public enum ChunkState
+{
+    NotGenerated,
+    Generating,
+    FullyGenerated
+}
+
 public class Chunk
 {
     public const int SIZE = 32;
@@ -13,9 +20,13 @@ public class Chunk
     public Vector3 WorldPosition { get; init; }
     public BlockType[] Blocks { get; private set; }
 
-    public ChunkMesh Mesh = null;
+    public ChunkMesh Mesh { get; private set; } = null;
 
     public BoundingBox BoundingBox { get; private set; }
+
+    public ChunkState State { get; private set; } = ChunkState.NotGenerated;
+
+    public bool IsMeshEmpty => Mesh?.IsEmpty ?? true;
 
     public Chunk(Vector3Int coordinate)
     {
@@ -26,8 +37,12 @@ public class Chunk
 
     public void Generate()
     {
+        State = ChunkState.Generating;
+
         Blocks = TerrainGenerator.GenerateChunkBlocks(Coordinate);
         Mesh = ChunkMeshGenerator.GenerateChunkMesh(this);
+
+        State = ChunkState.FullyGenerated;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -40,6 +55,9 @@ public class Chunk
 
     public void Destroy()
     {
+        if (State != ChunkState.FullyGenerated)
+            return;
+
         Blocks = null;
         Mesh?.Destroy();
         Mesh = null;

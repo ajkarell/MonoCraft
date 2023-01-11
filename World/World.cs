@@ -10,19 +10,31 @@ public class World : IDebugRowProvider
     private readonly Dictionary<Vector3Int, Chunk> chunks = new();
     private readonly Player player;
 
+    private IEnumerable<Chunk> chunksInView;
+
     public World(Player player)
     {
         this.player = player;
-        this.player.OnWorldGenThresholdCrossed += () => GenerateChunks();
+        this.player.OnWorldScanThresholdCrossed += ScanChunks;
+        this.player.OnViewChanged += Update;
 
-        GenerateChunks();
+        ScanChunks();
+
+        var chunksOrderedByDistance = chunks.Values
+            .OrderBy(chunk => (chunk.WorldPosition - player.Position).LengthSquared());
+
+        Task.Run(() =>
+        {
+            foreach (var chunk in chunksOrderedByDistance)
+                chunk.Generate();
+        });
+
+        Update();
     }
 
-    void GenerateChunks()
+    void ScanChunks()
     {
         var renderDistance = Settings.RenderDistanceChunks * Chunk.SIZE;
-        var chunksToBeGenerated = new List<Chunk>();
-        var chunksToBeRemoved = new List<Chunk>();
 
         bool IsInsideRenderDistance(Vector3 worldPosition)
         {
@@ -31,9 +43,10 @@ public class World : IDebugRowProvider
 
         foreach (var (coordinate, chunk) in chunks)
         {
-            if (!IsInsideRenderDistance(chunk.WorldPosition))
+            if (!IsInsideRenderDistance(chunk.WorldPosition) && chunk.State == ChunkState.FullyGenerated)
             {
-                chunksToBeRemoved.Add(chunk);
+                chunk.Destroy();
+                chunks.Remove(chunk.Coordinate);
             }
         }
 
@@ -52,43 +65,34 @@ public class World : IDebugRowProvider
                     if (chunks.ContainsKey(coordinate))
                         continue;
 
-                    var chunk = new Chunk(coordinate);
-
-                    chunksToBeGenerated.Add(chunk);
+                    chunks.Add(coordinate, new Chunk(coordinate));
                 }
             }
         }
+    }
 
-        var chunksOrderedByDistance = chunksToBeGenerated.OrderBy(chunk => (chunk.WorldPosition - player.Position).LengthSquared());
-
-        Parallel.ForEach(chunksToBeGenerated, new ParallelOptions { MaxDegreeOfParallelism = 5 }, chunk =>
+    public void Update()
+    {
+        Task.Run(() =>
         {
-            chunk.Generate();
+            chunksInView = chunks.Values
+                .Where(chunk => player.ViewFrustum.Intersects(chunk.BoundingBox))
+                .OrderBy(chunk => (chunk.WorldPosition - player.Position).LengthSquared())
+                .ToList(); // explicit ToList() to avoid collection changes during loop
+
+            foreach (var chunk in chunksInView)
+            {
+                if (chunk.State == ChunkState.NotGenerated)
+                    chunk.Generate();
+            }
         });
-
-        foreach (var chunk in chunksToBeRemoved)
-        {
-            chunk.Destroy();
-            chunks.Remove(chunk.Coordinate);
-        }
-
-        foreach (var chunk in chunksToBeGenerated)
-        {
-            chunks.Add(chunk.Coordinate, chunk);
-        }
     }
 
     public IEnumerable<ChunkMesh> GetChunkMeshesDueRender()
     {
-        foreach (var (_, chunk) in chunks)
+        foreach (var chunk in chunksInView)
         {
-            if (chunk.Mesh == null)
-                continue;
-
-            if (chunk.Mesh.IsEmpty)
-                continue;
-
-            if (Settings.UseFrustumCulling && !player.ViewFrustum.Intersects(chunk.BoundingBox))
+            if (chunk.IsMeshEmpty)
                 continue;
 
             yield return chunk.Mesh;
@@ -97,6 +101,7 @@ public class World : IDebugRowProvider
 
     public IEnumerable<string> GetDebugRows()
     {
-        yield return $"Chunks in memory: {chunks.Count}";
+        yield return $"Chunks in memory: {chunks.Values.Where(chunk => !chunk.IsMeshEmpty).Count()}";
+        yield return $"Chunks in view: {chunksInView?.Count() ?? 0}";
     }
 }

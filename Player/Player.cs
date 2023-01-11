@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
 
 namespace MonoCraft;
@@ -51,6 +52,8 @@ public class Player : GameComponent, IDebugRowProvider
             _viewMatrix = value;
             ViewMatrixInverted = Matrix.Invert(value);
             ViewFrustum = new(value * MainGame.ProjectionMatrix);
+
+            OnViewChanged?.Invoke();
         }
     }
 
@@ -58,8 +61,9 @@ public class Player : GameComponent, IDebugRowProvider
 
     public BoundingFrustum ViewFrustum { get; private set; }
 
-    public delegate void OnWorldGenThresholdCrossedHandler();
-    public event OnWorldGenThresholdCrossedHandler OnWorldGenThresholdCrossed;
+    public event Action OnWorldScanThresholdCrossed;
+
+    public event Action OnViewChanged;
 
     private Vector3Int previousWorldGenChunkCoordinate;
 
@@ -93,7 +97,7 @@ public class Player : GameComponent, IDebugRowProvider
                 || Math.Abs(ChunkCoordinate.Y - previousWorldGenChunkCoordinate.Y) >= Settings.WorldGenThresholdVertical
                 || Math.Abs(ChunkCoordinate.Z - previousWorldGenChunkCoordinate.Z) >= Settings.WorldGenThresholdHorizontal)
             {
-                OnWorldGenThresholdCrossed();
+                OnWorldScanThresholdCrossed();
                 previousWorldGenChunkCoordinate = ChunkCoordinate;
             }
         }
