@@ -80,6 +80,8 @@ public class World : IDebugRowProvider
                 .OrderBy(chunk => (chunk.WorldPosition - player.Position).LengthSquared())
                 .ToList(); // explicit ToList() to avoid collection changes during loop
 
+        Task.Run(() =>
+        {
             foreach (var chunk in chunksInView)
             {
                 if (chunk.State == ChunkState.NotGenerated)
