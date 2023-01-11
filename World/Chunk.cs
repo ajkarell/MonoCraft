@@ -41,7 +41,7 @@ public class Chunk
     public void Destroy()
     {
         Blocks = null;
-        Mesh.Destroy();
+        Mesh?.Destroy();
         Mesh = null;
     }
 }
