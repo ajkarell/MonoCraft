@@ -4,15 +4,18 @@ using Microsoft.Xna.Framework.Input;
 using MonoCraft.UI;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace MonoCraft;
 
 public class MainGame : Game
 {
+    public static Matrix ProjectionMatrix { get; private set; }
+
     private readonly GraphicsDeviceManager graphics;
-    private SpriteBatch spriteBatch;
-    private SpriteFont font;
+    private static SpriteBatch spriteBatch;
+    private static SpriteFont font;
 
     private static Vector2 screenCenter;
 
@@ -20,8 +23,6 @@ public class MainGame : Game
     private World world;
 
     private Effect effect;
-
-    public static Matrix ProjectionMatrix;
 
     private TextureArray textureArray;
 
@@ -61,13 +62,15 @@ public class MainGame : Game
 
     public MainGame()
     {
-        graphics = new GraphicsDeviceManager(this);
-        graphics.GraphicsProfile = GraphicsProfile.HiDef; //for shaders to work
+        graphics = new GraphicsDeviceManager(this)
+        {
+            GraphicsProfile = GraphicsProfile.HiDef, //for shaders to work
 
-        graphics.PreferredBackBufferWidth = 1280;
-        graphics.PreferredBackBufferHeight = 720;
+            PreferredBackBufferWidth = 1280,
+            PreferredBackBufferHeight = 720,
 
-        graphics.SynchronizeWithVerticalRetrace = false;
+            SynchronizeWithVerticalRetrace = false
+        };
 
         IsFixedTimeStep = true;
         TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 144.0));
@@ -78,27 +81,25 @@ public class MainGame : Game
         player = new Player(this);
 
         Components.Add(player);
-        
+
         Window.AllowUserResizing = true;
         Window.ClientSizeChanged += (_, _) =>
         {
-            ProjectionMatrix = CalculateProjectionMatrix();
+            ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(Settings.FieldOfView, (float)graphics.PreferredBackBufferWidth / graphics.PreferredBackBufferHeight, 0.001f, 100_00f);
             screenCenter = new(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
             currentMenu = CreateCurrentMenu();
         };
+
         CurrentGameState = GameState.Playing;
     }
 
     protected override void Initialize()
     {
-        foreach (IDebugRowProvider debugRowProvider in Components)
-        {
-            debugRowProviders.Add(debugRowProvider);
-        }
+        debugRowProviders.AddRange(Components.OfType<IDebugRowProvider>());
 
         screenCenter = new(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
 
-        ProjectionMatrix = CalculateProjectionMatrix();
+        ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(Settings.FieldOfView, (float)graphics.PreferredBackBufferWidth / graphics.PreferredBackBufferHeight, 0.001f, 100_00f);
 
         previousKeyState = Keyboard.GetState();
         previousMouseState = Mouse.GetState();
@@ -111,13 +112,13 @@ public class MainGame : Game
         spriteBatch = new SpriteBatch(GraphicsDevice);
         font = Content.Load<SpriteFont>("DebugFont");
 
-        effect = Content.Load<Effect>("Main");
-        effect.Parameters["Projection"].SetValue(ProjectionMatrix);
-
         var textureCount = Block.RegisterBlockTextures();
         textureArray = new TextureArray(GraphicsDevice, 16, 16, textureCount);
         textureArray.LoadTexturesFromContent(Content);
+
+        effect = Content.Load<Effect>("Main");
         effect.Parameters["TextureArray"].SetValue(textureArray);
+        effect.Parameters["Projection"].SetValue(ProjectionMatrix);
 
         world = new World(player);
         debugRowProviders.Add(world);
@@ -141,7 +142,7 @@ public class MainGame : Game
         }
 
         if (CurrentGameState == GameState.Playing)
-        base.Update(gameTime);
+            base.Update(gameTime);
         else
             currentMenu.HandleInput(mouseState, previousMouseState);
 
@@ -151,7 +152,7 @@ public class MainGame : Game
 
     protected override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(Color.DeepSkyBlue);
+        GraphicsDevice.Clear(Color.LightSkyBlue);
 
         GraphicsDevice.DepthStencilState = DepthStencilState.Default;
         GraphicsDevice.BlendState = BlendState.Opaque;
@@ -192,11 +193,8 @@ public class MainGame : Game
         DrawDebugUi(gameTime);
         spriteBatch.End();
     }
-
-    Matrix CalculateProjectionMatrix()
-        => Matrix.CreatePerspectiveFieldOfView(60.0f * (MathF.PI / 180.0f), (float)graphics.PreferredBackBufferWidth / graphics.PreferredBackBufferHeight, 0.01f, 100_000f);
-
     public static void CenterMouse() => Mouse.SetPosition((int)screenCenter.X, (int)screenCenter.Y);
+
 
     protected override void UnloadContent()
     {
