@@ -130,7 +130,7 @@ public class Player : GameComponent, IDebugRowProvider
         eulerAngles.X = Math.Clamp(eulerAngles.X, -89.9f, 89.9f);
         eulerAngles.Y = Math.Repeat(eulerAngles.Y, 0f, 360f);
 
-        Mouse.SetPosition((int)MainGame.ScreenCenter.X, (int)MainGame.ScreenCenter.Y);
+        MainGame.CenterMouse();
 
         previousMouseState = Mouse.GetState();
     }

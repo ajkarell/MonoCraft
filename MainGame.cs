@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoCraft.UI;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,19 +14,50 @@ public class MainGame : Game
     private SpriteBatch spriteBatch;
     private SpriteFont font;
 
+    private static Vector2 screenCenter;
+
     private readonly Player player;
     private World world;
 
     private Effect effect;
 
     public static Matrix ProjectionMatrix;
-    public static Vector2 ScreenCenter;
 
     private TextureArray textureArray;
 
-    private readonly List<IDebugRowProvider> debugRowProviders = new();
+    private KeyboardState previousKeyState;
+    private MouseState previousMouseState;
+
+    private Texture2D buttonBackgroundTexture;
+    private Menu currentMenu;
 
     private double fps = 0;
+    private readonly List<IDebugRowProvider> debugRowProviders = new();
+
+    enum GameState
+    {
+        Playing,
+        Paused,
+        InSettingsMenu,
+    }
+
+    private GameState _currentGameState;
+    private GameState CurrentGameState
+    {
+        get
+        {
+            return _currentGameState;
+        }
+        set
+        {
+            _currentGameState = value;
+            currentMenu = CreateCurrentMenu();
+            IsMouseVisible = value != GameState.Playing;
+
+            if (value == GameState.Playing)
+                CenterMouse();
+        }
+    }
 
     public MainGame()
     {
@@ -51,8 +83,10 @@ public class MainGame : Game
         Window.ClientSizeChanged += (_, _) =>
         {
             ProjectionMatrix = CalculateProjectionMatrix();
-            ScreenCenter = new(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
+            screenCenter = new(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
+            currentMenu = CreateCurrentMenu();
         };
+        CurrentGameState = GameState.Playing;
     }
 
     protected override void Initialize()
@@ -62,9 +96,12 @@ public class MainGame : Game
             debugRowProviders.Add(debugRowProvider);
         }
 
-        ScreenCenter = new(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
+        screenCenter = new(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
 
         ProjectionMatrix = CalculateProjectionMatrix();
+
+        previousKeyState = Keyboard.GetState();
+        previousMouseState = Mouse.GetState();
 
         base.Initialize();
     }
@@ -84,14 +121,32 @@ public class MainGame : Game
 
         world = new World(player);
         debugRowProviders.Add(world);
+
+        buttonBackgroundTexture = Content.Load<Texture2D>(@"UI\button");
+
+        currentMenu = CreateCurrentMenu();
     }
 
     protected override void Update(GameTime gameTime)
     {
-        if (Keyboard.GetState().IsKeyDown(Keys.Escape))
-            Exit();
+        var keyState = Keyboard.GetState();
+        var mouseState = Mouse.GetState();
 
+        if (keyState.IsKeyDown(Keys.Escape) && previousKeyState.IsKeyUp(Keys.Escape))
+        {
+            if (CurrentGameState != GameState.Playing)
+                CurrentGameState = GameState.Playing;
+            else
+                CurrentGameState = GameState.Paused;
+        }
+
+        if (CurrentGameState == GameState.Playing)
         base.Update(gameTime);
+        else
+            currentMenu.HandleInput(mouseState, previousMouseState);
+
+        previousKeyState = keyState;
+        previousMouseState = mouseState;
     }
 
     protected override void Draw(GameTime gameTime)
@@ -129,13 +184,68 @@ public class MainGame : Game
 
         base.Draw(gameTime);
 
-        spriteBatch.Begin();
+        spriteBatch.Begin(samplerState: SamplerState.PointWrap);
+
+        if (CurrentGameState != GameState.Playing)
+            currentMenu.Draw(spriteBatch);
+
         DrawDebugUi(gameTime);
         spriteBatch.End();
     }
 
     Matrix CalculateProjectionMatrix()
         => Matrix.CreatePerspectiveFieldOfView(60.0f * (MathF.PI / 180.0f), (float)graphics.PreferredBackBufferWidth / graphics.PreferredBackBufferHeight, 0.01f, 100_000f);
+
+    public static void CenterMouse() => Mouse.SetPosition((int)screenCenter.X, (int)screenCenter.Y);
+
+    protected override void UnloadContent()
+    {
+        buttonBackgroundTexture.Dispose();
+
+        base.UnloadContent();
+    }
+
+    Menu CreateCurrentMenu()
+    {
+        if (CurrentGameState == GameState.Paused)
+        {
+            var resumeButton = new Button("Resume", font, buttonBackgroundTexture);
+            resumeButton.OnClick += () => CurrentGameState = GameState.Playing;
+
+            var settingsButton = new Button("Settings", font, buttonBackgroundTexture);
+            settingsButton.OnClick += () => CurrentGameState = GameState.InSettingsMenu;
+
+            var exitButton = new Button("Exit", font, buttonBackgroundTexture);
+            exitButton.OnClick += Exit;
+
+            return new Menu(
+                screenCenter,
+                new List<IUIElement>
+                {
+                    resumeButton,
+                    settingsButton,
+                    exitButton
+                });
+        }
+        else if (CurrentGameState == GameState.InSettingsMenu)
+        {
+            var label = new Label("Settings", font);
+            var temp = new Label("Nothing here yet", font);
+            var backButton = new Button("Back", font, buttonBackgroundTexture);
+            backButton.OnClick += () => CurrentGameState = GameState.Paused;
+
+            return new Menu(
+                screenCenter,
+                new List<IUIElement>
+                {
+                    label,
+                    temp,
+                    backButton
+                });
+        }
+
+        return null;
+    }
 
     private void DrawDebugUi(GameTime gameTime)
     {
