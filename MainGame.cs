@@ -69,7 +69,7 @@ public class MainGame : Game
             PreferredBackBufferWidth = 1280,
             PreferredBackBufferHeight = 720,
 
-            SynchronizeWithVerticalRetrace = false
+            SynchronizeWithVerticalRetrace = true
         };
 
         IsFixedTimeStep = true;
