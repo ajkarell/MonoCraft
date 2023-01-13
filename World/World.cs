@@ -75,11 +75,12 @@ public class World : IDebugRowProvider
     {
         chunksInView = chunks.Values
             .Where(chunk => player.ViewFrustum.Intersects(chunk.BoundingBox))
+            .OrderByDescending(chunk => (chunk.WorldPosition - player.Position).LengthSquared()) // order like this to fix transparency issues between chunks
             .ToList(); // explicit ToList() to avoid collection changes during loop
 
         Task.Run(() =>
         {
-            foreach (var chunk in chunksInView.OrderBy(chunk => (chunk.WorldPosition - player.Position).LengthSquared()))
+            foreach (var chunk in chunksInView.Reverse())
             {
                 if (chunk.State == ChunkState.NotGenerated)
                     chunk.Generate();
