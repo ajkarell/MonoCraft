@@ -1,12 +1,21 @@
 using Microsoft.Xna.Framework;
 using MonoCraft.Noise;
+using System.Runtime.CompilerServices;
 
 namespace MonoCraft;
 
 public static class TerrainGenerator
 {
-    static readonly FastNoiseLite FastNoiseLite = new(seed: 28 / 02 / 04);
-    static float NoiseScale => 0.50f;
+    static readonly FastNoiseLite terrainNoiseGenerator = new(seed: 28 / 02 / 04);
+    static readonly FastNoiseLite biomeNoiseGenerator = new(seed: 21 / 12 / 04);
+
+    static float TerrainNoiseScale => 0.50f;
+    static float BiomeNoiseScale => 0.02f;
+    static float BiomeNoiseEffect => 0.40f;
+
+    static float HeightDensityEffect => 0.04f;
+
+    static int WaterLevel => 0;
 
     public static BlockType[] GenerateChunkBlocks(Vector3Int coordinate)
     {
@@ -21,24 +30,34 @@ public static class TerrainGenerator
                 {
                     var worldPosition = coordinate * Chunk.SIZE + new Vector3(x, y, z);
 
-                    var density = FastNoiseLite.GetNoise(worldPosition.X * NoiseScale, worldPosition.Y * NoiseScale, worldPosition.Z * NoiseScale);
+                    var terrainNoise = terrainNoiseGenerator.GetNoise(worldPosition.X * TerrainNoiseScale, worldPosition.Y * TerrainNoiseScale, worldPosition.Z * TerrainNoiseScale);
+                    var biomeNoise = biomeNoiseGenerator.GetNoise(worldPosition.X * BiomeNoiseScale, worldPosition.Z * BiomeNoiseScale);
+
+                    var density = terrainNoise
+                        + biomeNoise * BiomeNoiseEffect
+                        - worldPosition.Y * HeightDensityEffect;
 
                     densities[Chunk.Index(x, y, z)] = density;
                 }
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         BlockType CalculateBlockType(int x, int y, int z)
         {
             var worldY = y + coordinate.Y * Chunk.SIZE;
 
             var density = densities[Chunk.Index(x, y, z)];
-            var adjustedDensity = density - worldY / 25.0f;
 
-            if (adjustedDensity <= 0)
-                return BlockType.Air;
+            if (density <= 0)
+            {
+                if (worldY == WaterLevel)
+                    return BlockType.Water;
+                else
+                    return BlockType.Air;
+            }
 
-            if (adjustedDensity <= 0.20f)
+            if (density <= 0.20f)
             {
                 var densityAbove = y + 1 >= Chunk.SIZE
                     ? float.MaxValue
