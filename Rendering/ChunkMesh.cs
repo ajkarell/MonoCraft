@@ -26,12 +26,11 @@ public class ChunkMesh
         InverseTransposeWorldMatrix = Matrix.Transpose(Matrix.Invert(WorldMatrix));
     }
 
-    public void AddFace(Vector3 blockPosition, BlockType blockType, BlockSide blockSide, Vector3 offset)
+    public void AddFace(Vector3 blockPosition, BlockType blockType, Direction side, Vector3 offset)
     {
-        int blockSideIndex = (int)blockSide;
-        int textureIndex = Block.GetTextureIndex(blockType, blockSide);
+        int textureIndex = Block.GetTextureIndex(blockType, side);
 
-        var positions = ChunkMeshGenerator.BlockPositionsBySide[blockSideIndex];
+        var positions = ChunkMeshGenerator.BlockPositionsBySide[(int)side];
 
         var uvs = new Vector3[] {
             new(0, 0, textureIndex),
@@ -40,7 +39,7 @@ public class ChunkMesh
             new(1, 0, textureIndex),
         };
 
-        var faceNormal = ChunkMeshGenerator.BlockNormals[blockSideIndex];
+        var faceNormal = ChunkMeshGenerator.BlockNormals[(int)side];
         var alpha = blockType.IsLiquid() ? 0.8f : 1f;
 
         var faceNormalAndAlpha = new Vector4(faceNormal.X, faceNormal.Y, faceNormal.Z, alpha);

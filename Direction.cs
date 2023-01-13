@@ -1,11 +1,11 @@
 namespace MonoCraft;
 
-public enum BlockSide : byte
+public enum Direction : byte
 {
     Left = 0,
     Right = 1,
-    Bottom = 2,
-    Top = 3,
+    Down = 2,
+    Up = 3,
     Back = 4,
     Front = 5
 }

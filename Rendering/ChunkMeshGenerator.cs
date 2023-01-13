@@ -11,21 +11,21 @@ public static class ChunkMeshGenerator
 
     public static readonly Vector3[] BlockNormals =
     {
-        -RIGHT ,    // CUBE_LEFT    0
-        RIGHT,      // CUBE_RIGHT   1
-        -UP,        // CUBE_BOTTOM  2
-        UP,         // CUBE_TOP     3
-        -FORWARD,   // CUBE_BACK    4
-        FORWARD,    // CUBE_FRONT   5
+        -RIGHT ,    // LEFT   0
+        RIGHT,      // RIGHT  1
+        -UP,        // DOWN   2
+        UP,         // UP     3
+        -FORWARD,   // BACK   4
+        FORWARD,    // FRONT  5
     };
 
     public static readonly Vector3[][] BlockPositionsBySide = {
-        new[] {   UP,                     ZERO,               FORWARD,            UP+FORWARD          },  // CUBE_LEFT    0
-        new[] {   RIGHT + UP + FORWARD,   RIGHT + FORWARD,    RIGHT,              RIGHT + UP          },  // CUBE_RIGHT   1
-        new[] {   RIGHT,                  RIGHT + FORWARD,    FORWARD,            ZERO                },  // CUBE_BOTTOM  2
-        new[] {   RIGHT + UP + FORWARD,   RIGHT + UP,         UP,                 UP + FORWARD        },  // CUBE_TOP     3
-        new[] {   RIGHT + UP,             RIGHT,              ZERO,               UP                  },  // CUBE_BACK    4
-        new[] {   UP+FORWARD,             FORWARD,            RIGHT+FORWARD,      RIGHT + UP + FORWARD},  // CUBE_FRONT   5
+        new[] {   UP,                     ZERO,               FORWARD,            UP + FORWARD        },  // LEFT   0
+        new[] {   RIGHT + UP + FORWARD,   RIGHT + FORWARD,    RIGHT,              RIGHT + UP          },  // RIGHT  1
+        new[] {   RIGHT,                  RIGHT + FORWARD,    FORWARD,            ZERO                },  // DOWN   2
+        new[] {   RIGHT + UP + FORWARD,   RIGHT + UP,         UP,                 UP + FORWARD        },  // UP     3
+        new[] {   RIGHT + UP,             RIGHT,              ZERO,               UP                  },  // BACK   4
+        new[] {   UP+FORWARD,             FORWARD,            RIGHT+FORWARD,      RIGHT + UP + FORWARD},  // FRONT  5
     };
 
     public static ChunkMesh GenerateChunkMesh(Chunk chunk)
@@ -44,8 +44,8 @@ public static class ChunkMeshGenerator
                     {
                         if (blockType.IsLiquid())
                         {
-                            chunkMesh.AddFace(new Vector3(x, y, z), blockType, BlockSide.Top, new(0.0f, -0.2f, 0.0f));
-                            chunkMesh.AddFace(new Vector3(x, y, z), blockType, BlockSide.Bottom, new(0.0f, 0.8f, 0.0f));
+                            chunkMesh.AddFace(new Vector3(x, y, z), blockType, Direction.Up, new(0.0f, -0.2f, 0.0f));
+                            chunkMesh.AddFace(new Vector3(x, y, z), blockType, Direction.Down, new(0.0f, 0.8f, 0.0f));
                         }
 
                         continue;
@@ -53,7 +53,7 @@ public static class ChunkMeshGenerator
 
                     var position = new Vector3(x, y, z);
 
-                    for (BlockSide side = 0; (int)side < 6; side++)
+                    for (Direction side = 0; (int)side < 6; side++)
                     {
                         var neighboringPosition = (position + BlockNormals[(int)side]).FloorToInt();
 

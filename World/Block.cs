@@ -24,7 +24,7 @@ public static class Block
         }
     }
 
-    private static readonly Dictionary<(BlockType, BlockSide), int> BlockSivuTextureIndices = new();
+    private static readonly Dictionary<(BlockType, Direction), int> BlockTypeTextureIndices = new();
 
     /// <summary>
     /// Register texture for every side
@@ -38,12 +38,12 @@ public static class Block
         string textureBack,
         string textureLeft)
     {
-        BlockSivuTextureIndices[(tyyppi, BlockSide.Top)] = GetTextureIndex(textureTop);
-        BlockSivuTextureIndices[(tyyppi, BlockSide.Bottom)] = GetTextureIndex(textureBottom);
-        BlockSivuTextureIndices[(tyyppi, BlockSide.Front)] = GetTextureIndex(textureFront);
-        BlockSivuTextureIndices[(tyyppi, BlockSide.Right)] = GetTextureIndex(textureRight);
-        BlockSivuTextureIndices[(tyyppi, BlockSide.Back)] = GetTextureIndex(textureBack);
-        BlockSivuTextureIndices[(tyyppi, BlockSide.Left)] = GetTextureIndex(textureLeft);
+        BlockTypeTextureIndices[(tyyppi, Direction.Up)] = GetTextureIndex(textureTop);
+        BlockTypeTextureIndices[(tyyppi, Direction.Down)] = GetTextureIndex(textureBottom);
+        BlockTypeTextureIndices[(tyyppi, Direction.Front)] = GetTextureIndex(textureFront);
+        BlockTypeTextureIndices[(tyyppi, Direction.Right)] = GetTextureIndex(textureRight);
+        BlockTypeTextureIndices[(tyyppi, Direction.Back)] = GetTextureIndex(textureBack);
+        BlockTypeTextureIndices[(tyyppi, Direction.Left)] = GetTextureIndex(textureLeft);
     }
 
     /// <summary>
@@ -80,9 +80,9 @@ public static class Block
             textureLeft: texture);
     }
 
-    public static int GetTextureIndex(BlockType type, BlockSide side)
+    public static int GetTextureIndex(BlockType type, Direction side)
     {
-        return BlockSivuTextureIndices[(type, side)];
+        return BlockTypeTextureIndices[(type, side)];
     }
 
     private const string TEXTURE_DIRT = "dirt";
