@@ -61,6 +61,17 @@ public class Player : GameComponent, IDebugRowProvider
 
     public BoundingFrustum ViewFrustum { get; private set; }
 
+    public string CardinalDirection
+    {
+        get
+        {
+            if (Math.Abs(ViewMatrixInverted.Forward.X) > Math.Abs(ViewMatrixInverted.Forward.Z))
+                return ViewMatrixInverted.Forward.X >= 0 ? "East" : "West";
+            else
+                return ViewMatrixInverted.Forward.Z >= 0 ? "South" : "North";
+        }
+    }
+
     public event Action OnWorldScanThresholdCrossed;
 
     public event Action OnViewChanged;
@@ -152,5 +163,6 @@ public class Player : GameComponent, IDebugRowProvider
         yield return $"Position: {Position.FloorToInt()}";
         yield return $"Chunk coordinate: {ChunkCoordinate}";
         yield return $"Orientation: {EulerAngles.FloorToInt()}";
+        yield return $"Cardinal: {CardinalDirection}";
     }
 }
