@@ -120,6 +120,11 @@ public class MainGame : Game
         effect.Parameters["TextureArray"].SetValue(textureArray);
         effect.Parameters["Projection"].SetValue(ProjectionMatrix);
 
+        player.OnViewChanged += () =>
+        {
+            effect.Parameters["View"].SetValue(player.ViewMatrix);
+        };
+
         world = new World(player);
         debugRowProviders.Add(world);
 
