@@ -30,7 +30,12 @@ public class MainGame : Game
     private MouseState previousMouseState;
 
     private Texture2D buttonBackgroundTexture;
-    private Menu currentMenu;
+    private Menu menu;
+
+    private const float NearPlane = 0.001f;
+    private const float FarPlane = 100_000f;
+
+    private float AspectRatio => (float)graphics.PreferredBackBufferWidth / graphics.PreferredBackBufferHeight;
 
     private double fps = 0;
     private readonly List<IDebugRowProvider> debugRowProviders = new();
@@ -52,7 +57,7 @@ public class MainGame : Game
         set
         {
             _currentGameState = value;
-            currentMenu = CreateCurrentMenu();
+            menu = CreateMenuForCurrentGameState();
             IsMouseVisible = value != GameState.Playing;
 
             if (value == GameState.Playing)
@@ -85,9 +90,9 @@ public class MainGame : Game
         Window.AllowUserResizing = true;
         Window.ClientSizeChanged += (_, _) =>
         {
-            ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(Settings.FieldOfView, (float)graphics.PreferredBackBufferWidth / graphics.PreferredBackBufferHeight, 0.001f, 100_00f);
+            ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(Settings.FieldOfView, AspectRatio, NearPlane, FarPlane);
             screenCenter = new(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
-            currentMenu = CreateCurrentMenu();
+            menu = CreateMenuForCurrentGameState();
         };
 
         CurrentGameState = GameState.Playing;
@@ -99,7 +104,7 @@ public class MainGame : Game
 
         screenCenter = new(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
 
-        ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(Settings.FieldOfView, (float)graphics.PreferredBackBufferWidth / graphics.PreferredBackBufferHeight, 0.001f, 100_00f);
+        ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(Settings.FieldOfView, AspectRatio, NearPlane, FarPlane);
 
         previousKeyState = Keyboard.GetState();
         previousMouseState = Mouse.GetState();
@@ -113,7 +118,7 @@ public class MainGame : Game
         font = Content.Load<SpriteFont>("DebugFont");
 
         var textureCount = Block.RegisterBlockTextures();
-        textureArray = new TextureArray(GraphicsDevice, 16, 16, textureCount);
+        textureArray = new TextureArray(GraphicsDevice, textureWidth: 16, textureHeight: 16, textureCount);
         textureArray.LoadTexturesFromContent(Content);
 
         effect = Content.Load<Effect>("Main");
@@ -130,7 +135,7 @@ public class MainGame : Game
 
         buttonBackgroundTexture = Content.Load<Texture2D>(@"UI\button");
 
-        currentMenu = CreateCurrentMenu();
+        menu = CreateMenuForCurrentGameState();
     }
 
     protected override void Update(GameTime gameTime)
@@ -149,7 +154,7 @@ public class MainGame : Game
         if (CurrentGameState == GameState.Playing)
             base.Update(gameTime);
         else
-            currentMenu.HandleInput(mouseState, previousMouseState);
+            menu.HandleInput(mouseState, previousMouseState);
 
         previousKeyState = keyState;
         previousMouseState = mouseState;
@@ -164,13 +169,11 @@ public class MainGame : Game
         GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
         GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
 
-        effect.Parameters["View"].SetValue(player.ViewMatrix);
-
         var chunkMeshes = world.GetChunkMeshesDueRender();
+
         foreach (var mesh in chunkMeshes)
         {
             effect.Parameters["World"].SetValue(mesh.WorldMatrix);
-            //effect.Parameters["WorldInverseTranspose"].SetValue(mesh.InverseTransposeWorldMatrix);
 
             foreach (var pass in effect.CurrentTechnique.Passes)
             {
@@ -179,10 +182,10 @@ public class MainGame : Game
                 GraphicsDevice.DrawUserIndexedPrimitives(
                     PrimitiveType.TriangleList,
                     mesh.Vertices,
-                    0,
+                    vertexOffset: 0,
                     mesh.VertexCount,
                     mesh.Indices,
-                    0,
+                    indexOffset: 0,
                     mesh.TriangleCount
                 );
             }
@@ -193,13 +196,12 @@ public class MainGame : Game
         spriteBatch.Begin(samplerState: SamplerState.PointWrap);
 
         if (CurrentGameState != GameState.Playing)
-            currentMenu.Draw(spriteBatch);
+            menu.Draw(spriteBatch);
 
         DrawDebugUi(gameTime);
         spriteBatch.End();
     }
     public static void CenterMouse() => Mouse.SetPosition((int)screenCenter.X, (int)screenCenter.Y);
-
 
     protected override void UnloadContent()
     {
@@ -208,7 +210,7 @@ public class MainGame : Game
         base.UnloadContent();
     }
 
-    Menu CreateCurrentMenu()
+    Menu CreateMenuForCurrentGameState()
     {
         if (CurrentGameState == GameState.Paused)
         {

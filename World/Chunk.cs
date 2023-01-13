@@ -52,14 +52,4 @@ public class Chunk
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Index(Vector3Int position)
         => position.Y * SIZE_SQUARED + position.Z * SIZE + position.X;
-
-    public void Destroy()
-    {
-        if (State != ChunkState.FullyGenerated)
-            return;
-
-        Blocks = null;
-        Mesh?.Destroy();
-        Mesh = null;
-    }
 }

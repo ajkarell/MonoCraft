@@ -18,8 +18,9 @@ namespace MonoCraft.UI
         public event Action OnClick;
 
         private Texture2D BackgroundTexture { get; set; }
-        private static Color NormalTint => Color.White;
-        private static Color HoverTint => new(0.9f, 0.9f, 0.9f);
+
+        private static Color NormalTint = Color.White;
+        private static Color HoverTint = new(0.9f, 0.9f, 0.9f);
 
         private bool isHoveredOver = false;
 

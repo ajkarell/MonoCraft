@@ -7,14 +7,13 @@ namespace MonoCraft;
 
 public class Player : GameComponent, IDebugRowProvider
 {
-    private Vector3 position;
-
+    private Vector3 _position;
     public Vector3 Position
     {
-        get { return position; }
+        get { return _position; }
         private set
         {
-            position = value;
+            _position = value;
             ChunkCoordinate = value.AsChunkCoordinate();
             ViewMatrix = Math.CalculateViewMatrix(value, EulerAngles);
         }
@@ -22,16 +21,15 @@ public class Player : GameComponent, IDebugRowProvider
 
     public Vector3Int ChunkCoordinate { get; private set; }
 
-    private Vector3 eulerAngles;
-
+    private Vector3 _eulerAngles;
     public Vector3 EulerAngles
     {
-        get { return eulerAngles; }
+        get { return _eulerAngles; }
         private set
         {
-            eulerAngles = value;
-            eulerAngles.X = Math.Clamp(value.X, -89.9f, 89.9f);
-            eulerAngles.Y = Math.Repeat(value.Y, 0f, 360f);
+            _eulerAngles = value;
+            _eulerAngles.X = Math.Clamp(value.X, -89.9f, 89.9f);
+            _eulerAngles.Y = Math.Repeat(value.Y, 0f, 360f);
 
             ViewMatrix = Math.CalculateViewMatrix(Position, value);
         }
@@ -43,7 +41,6 @@ public class Player : GameComponent, IDebugRowProvider
     public Vector3 Right => ViewMatrixInverted.Right;
 
     private Matrix _viewMatrix;
-
     public Matrix ViewMatrix
     {
         get { return _viewMatrix; }
@@ -157,6 +154,7 @@ public class Player : GameComponent, IDebugRowProvider
 
         previousMouseState = Mouse.GetState();
     }
+
 
     public IEnumerable<string> GetDebugRows()
     {

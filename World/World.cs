@@ -45,8 +45,8 @@ public class World : IDebugRowProvider
         {
             if (!IsInsideRenderDistance(chunk.WorldPosition) && chunk.State == ChunkState.FullyGenerated)
             {
-                chunk.Destroy();
-                chunks.Remove(chunk.Coordinate);
+                chunks[coordinate] = null;
+                chunks.Remove(coordinate);
             }
         }
 
