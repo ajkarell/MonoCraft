@@ -101,7 +101,7 @@ public class World : IDebugRowProvider
 
     public IEnumerable<string> GetDebugRows()
     {
-        yield return $"Chunks in memory: {chunks.Values.Where(chunk => !chunk.IsMeshEmpty).Count()}";
+        yield return $"Chunks in memory: {chunks.Count} ({chunks.Values.Where(chunk => !chunk.IsMeshEmpty).Count()} with mesh)";
         yield return $"Chunks in view: {chunksInView?.Count() ?? 0}";
     }
 }
