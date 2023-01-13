@@ -155,7 +155,7 @@ public class MainGame : Game
         GraphicsDevice.Clear(Color.LightSkyBlue);
 
         GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-        GraphicsDevice.BlendState = BlendState.Opaque;
+        GraphicsDevice.BlendState = BlendState.AlphaBlend;
         GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
         GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
 

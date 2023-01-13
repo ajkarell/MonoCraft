@@ -7,6 +7,7 @@ float4x4 View;
 float4x4 Projection;
 
 Texture2DArray TextureArray;
+
 sampler textureSampler = sampler_state
 {
 	Texture = <Texture>;
@@ -19,15 +20,16 @@ sampler textureSampler = sampler_state
 struct VertexShaderInput
 {
 	float4 Position : POSITION0;
-	float3 Normal : NORMAL0;
-	float3 TexCoord: TEXCOORD0;
+	float4 Normal : NORMAL0;
+	float3 TexCoord : TEXCOORD0;
 };
 
 struct VertexShaderOutput
 {
-	float4 Position : SV_POSITION;
-	float3 Normal : NORMAL0;
+	float4 FragPosition : SV_POSITION;
 	float3 TexCoord : TEXCOORD0;
+	float3 Normal : NORMAL0;
+	float Alpha : COLOR0;
 };
 
 VertexShaderOutput MainVS(in VertexShaderInput input)
@@ -36,12 +38,12 @@ VertexShaderOutput MainVS(in VertexShaderInput input)
 
     float4 worldPosition = mul(input.Position, World);
     float4 viewPosition = mul(worldPosition, View);
-    output.Position = mul(viewPosition, Projection);
+    output.FragPosition = mul(viewPosition, Projection);
  
-    float4 normal = normalize(mul(input.Normal, World));
-    output.Normal = normal;
+	output.Normal = normalize(input.Normal);
 
-	output.TexCoord = input.TexCoord; // TODO
+	output.TexCoord = input.TexCoord;
+	output.Alpha = input.Normal.w;
 
 	return output;
 }
@@ -49,8 +51,9 @@ VertexShaderOutput MainVS(in VertexShaderInput input)
 float4 MainPS(VertexShaderOutput input) : COLOR
 {
 	float4 textureColor = TextureArray.Sample(textureSampler, input.TexCoord);
+	textureColor.a = input.Alpha;
 
-    return textureColor;
+	return textureColor;
 }
 
 technique Main
