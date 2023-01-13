@@ -78,7 +78,7 @@ public class MainGame : Game
         Content.RootDirectory = "Content";
         IsMouseVisible = false;
 
-        player = new Player(this);
+        player = new Player(this, spawnPoint: new(0, 32, 0));
 
         Components.Add(player);
 

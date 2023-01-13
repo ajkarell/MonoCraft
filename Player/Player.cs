@@ -72,9 +72,9 @@ public class Player : GameComponent, IDebugRowProvider
 
     private MouseState previousMouseState;
 
-    public Player(Game game) : base(game)
+    public Player(Game game, Vector3 spawnPoint) : base(game)
     {
-        Position = Vector3.Zero;
+        Position = spawnPoint;
 
         Velocity = Vector3.Zero;
         EulerAngles = Vector3.Zero;
