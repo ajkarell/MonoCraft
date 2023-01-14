@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,6 +12,8 @@ public class World : IDebugRowProvider
     private readonly Player player;
 
     private IEnumerable<Chunk> chunksInView;
+
+    private bool isGenerating = false;
 
     public World(Player player)
     {
@@ -78,14 +81,21 @@ public class World : IDebugRowProvider
             .OrderByDescending(chunk => (chunk.WorldPosition - player.Position).LengthSquared()) // order like this to fix transparency issues between chunks
             .ToList(); // explicit ToList() to avoid collection changes during loop
 
-        Task.Run(() =>
+        if(!isGenerating)
         {
-            foreach (var chunk in chunksInView.Reverse())
+            Task.Run(() =>
             {
-                if (chunk.State == ChunkState.NotGenerated)
-                    chunk.Generate();
-            }
-        });
+                isGenerating = true;
+
+                foreach (var chunk in chunksInView.Reverse())
+                {
+                    if (chunk.State == ChunkState.NotGenerated)
+                        chunk.Generate();
+                }
+
+                isGenerating = false;
+            });
+        }
     }
 
     public IEnumerable<ChunkMesh> GetChunkMeshesDueRender()
